@@ -12,6 +12,8 @@
     "chartist": "0.10.1",
     "classnames": "2.2.6",
     "date-fns": "^2.0.0-beta.2",
+    "dynalite": "^2.3.1",
+    "dynamoose": "^1.10.0",
     "history": "4.9.0",
     "perfect-scrollbar": "1.4.0",
     "prop-types": "15.7.2",
