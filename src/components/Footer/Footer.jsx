@@ -56,11 +56,7 @@ function Footer({ ...props }) {
         </div>
         <p className={classes.right}>
           <span>
-            &copy; {1900 + new Date().getYear()}{" "}
-            <a href="https://www.creative-tim.com?ref=mdr-footer" target="_blank" className={classes.a}>
-              Creative Tim
-            </a>
-            , made with love for a better web
+            Made with ♥ for a better planet.
           </span>
         </p>
       </div>
