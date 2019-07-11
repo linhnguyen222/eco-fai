@@ -57,7 +57,7 @@ const styles = {
   }
 };
 
-function UserProfile(props) {
+function CreateConferencePage(props) {
   const { classes } = props;
 
   const [startDate, setStartDate] = React.useState(Date.now());
@@ -171,8 +171,8 @@ function UserProfile(props) {
   );
 }
 
-UserProfile.propTypes = {
+CreateConferencePage.propTypes = {
   classes: PropTypes.object
 };
 
-export default withStyles(styles)(UserProfile);
+export default withStyles(styles)(CreateConferencePage);
