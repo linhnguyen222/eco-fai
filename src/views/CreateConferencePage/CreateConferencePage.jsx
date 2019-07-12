@@ -57,12 +57,19 @@ const styles = {
   }
 };
 
+const allSet = args => {
+  return args.reduce((value, a) => value && a);
+};
+
 function CreateConferencePage(props) {
   const { classes } = props;
 
   const [startDate, setStartDate] = React.useState(Date.now());
   const [endDate, setEndDate] = React.useState(Date.now());
   const [days, setDays] = React.useState(5);
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [organizer, setOrganizer] = React.useState("");
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -74,6 +81,38 @@ function CreateConferencePage(props) {
 
   function handleDaysChange(days) {
     setDays(Number(days));
+  }
+
+  function handleDescriptionChange(event) {
+    setDescription(event.target.value);
+  }
+
+  function handleNameChange(event) {
+    setName(event.target.value);
+  }
+
+  function handleOrganizerChange(event) {
+    setOrganizer(event.target.value);
+  }
+
+  function handleCreateNewConferenceSubmission() {
+    fetch("/api/register-conference", {
+      url: "/api/register-conference",
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify({
+        info: {
+          name,
+          organizer,
+          days,
+          description,
+          earliestStartDate: startDate,
+          latestEndDate: endDate
+        }
+      })
+    });
   }
 
   return (
@@ -95,6 +134,10 @@ function CreateConferencePage(props) {
                     formControlProps={{
                       fullWidth: true
                     }}
+                    inputProps={{
+                      value: name,
+                      onChange: handleNameChange
+                    }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={7}>
@@ -103,6 +146,10 @@ function CreateConferencePage(props) {
                     id="organizer"
                     formControlProps={{
                       fullWidth: true
+                    }}
+                    inputProps={{
+                      value: organizer,
+                      onChange: handleOrganizerChange
                     }}
                   />
                 </GridItem>
@@ -155,14 +202,31 @@ function CreateConferencePage(props) {
                     }}
                     inputProps={{
                       multiline: true,
-                      rows: 5
+                      rows: 5,
+                      value: description,
+                      onChange: handleDescriptionChange
                     }}
                   />
                 </GridItem>
               </GridContainer>
             </CardBody>
             <CardFooter>
-              <Button color="primary">Create New Conference</Button>
+              <Button
+                color="primary"
+                disabled={
+                  !allSet([
+                    name,
+                    description,
+                    organizer,
+                    startDate,
+                    endDate,
+                    days
+                  ])
+                }
+                onClick={handleCreateNewConferenceSubmission}
+              >
+                Create New Conference
+              </Button>
             </CardFooter>
           </Card>
         </GridItem>
