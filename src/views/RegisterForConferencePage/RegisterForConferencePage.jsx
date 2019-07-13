@@ -238,7 +238,8 @@ function RegisterForConference(props) {
 }
 
 RegisterForConference.propTypes = {
-  classes: PropTypes.object
+  classes: PropTypes.object,
+  match: PropTypes.object
 };
 
 export default withRouter(withStyles(styles)(RegisterForConference));
