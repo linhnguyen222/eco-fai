@@ -20,6 +20,7 @@ import React from "react";
 import PropTypes from "prop-types";
 // date-io utils
 import DateFnsUtils from "@date-io/date-fns";
+import { addDays, max as dateMax } from "date-fns";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import FormControl from "@material-ui/core/FormControl";
@@ -64,9 +65,9 @@ const allSet = args => {
 function CreateConferencePage(props) {
   const { classes } = props;
 
-  const [startDate, setStartDate] = React.useState(Date.now());
-  const [endDate, setEndDate] = React.useState(Date.now());
+  const [startDate, setStartDate] = React.useState(new Date());
   const [days, setDays] = React.useState(5);
+  const [endDate, setEndDate] = React.useState(addDays(startDate, 5));
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [organizer, setOrganizer] = React.useState("");
@@ -174,6 +175,7 @@ function CreateConferencePage(props) {
                       id="end-date-picker"
                       label="Latest Possible Possible End Date"
                       value={endDate}
+                      minDate={dateMax(endDate, addDays(startDate, days))}
                       onChange={handleEndDateChange}
                       KeyboardButtonProps={{
                         "aria-label": "change latest end date"
