@@ -22,6 +22,7 @@ import PropTypes from "prop-types";
 import { withRouter } from "react-router";
 // date-io utils
 import DateFnsUtils from "@date-io/date-fns";
+import { addDays, subDays, max as dateMax } from "date-fns";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import FormControl from "@material-ui/core/FormControl";
@@ -65,8 +66,9 @@ function RegisterForConference(props) {
   const { classes, match } = props;
   const slug = match.params.slug;
 
-  const [startDate, setStartDate] = React.useState(Date.now());
-  const [endDate, setEndDate] = React.useState(Date.now());
+  const [startDate, setStartDate] = React.useState(new Date());
+  const [endDate, setEndDate] = React.useState(new Date());
+  const [from, setFrom] = React.useState("");
   const [conferenceInfoState, setConferenceInfoState] = React.useState(
     "NOT_FETCHED"
   );
@@ -80,6 +82,7 @@ function RegisterForConference(props) {
   const [conferenceLatestEndDate, setConferenceLatestEndDate] = React.useState(
     Date.now()
   );
+  const [conferenceDays, setConferenceDays] = React.useState(5);
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -87,6 +90,27 @@ function RegisterForConference(props) {
 
   function handleEndDateChange(date) {
     setEndDate(date);
+  }
+
+  function handleFromChange(event) {
+    setFrom(event.target.value);
+  }
+
+  function handleFollowClicked() {
+    fetch(`/api/register-conference-interest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        info: {
+          slug,
+          startDate,
+          endDate,
+          from
+        }
+      })
+    });
   }
 
   if (conferenceInfoState === "NOT_FETCHED") {
@@ -104,6 +128,7 @@ function RegisterForConference(props) {
           setConferenceName(res.info.conference.name);
           setConferenceEarliestStartDate(res.info.conference.earliestStartDate);
           setConferenceLatestEndDate(res.info.conference.latestEndDate);
+          setConferenceDays(res.info.conference.days);
           handleStartDateChange(res.info.conference.earliestStartDate);
           handleEndDateChange(res.info.conference.latestEndDate);
         }
@@ -127,6 +152,10 @@ function RegisterForConference(props) {
                   <CustomInput
                     labelText="Travelling From"
                     id="from"
+                    inputProps={{
+                      value: from,
+                      onChange: handleFromChange
+                    }}
                     formControlProps={{
                       fullWidth: true
                     }}
@@ -142,7 +171,7 @@ function RegisterForConference(props) {
                       value={startDate}
                       onChange={handleStartDateChange}
                       minDate={conferenceEarliestStartDate}
-                      maxDate={conferenceLatestEndDate}
+                      maxDate={subDays(conferenceLatestEndDate, conferenceDays)}
                       KeyboardButtonProps={{
                         "aria-label": "change earliest start date"
                       }}
@@ -156,7 +185,10 @@ function RegisterForConference(props) {
                       label="Latest Possible Possible End Date"
                       value={endDate}
                       onChange={handleEndDateChange}
-                      minDate={conferenceEarliestStartDate}
+                      minDate={addDays(
+                        dateMax(conferenceEarliestStartDate, startDate),
+                        conferenceDays
+                      )}
                       maxDate={conferenceLatestEndDate}
                       KeyboardButtonProps={{
                         "aria-label": "change latest end date"
@@ -167,7 +199,13 @@ function RegisterForConference(props) {
               </GridContainer>
             </CardBody>
             <CardFooter>
-              <Button color="primary">Register My Interest</Button>
+              <Button
+                color="primary"
+                disabled={!from.length}
+                onClick={handleFollowClicked}
+              >
+                Register My Interest
+              </Button>
             </CardFooter>
           </Card>
         </GridItem>
