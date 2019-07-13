@@ -80,7 +80,6 @@ function RegisterForConference(props) {
   const [conferenceLatestEndDate, setConferenceLatestEndDate] = React.useState(
     Date.now()
   );
-  const [conferenceDays, setConferenceDays] = React.useState(5);
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -105,7 +104,6 @@ function RegisterForConference(props) {
           setConferenceName(res.info.conference.name);
           setConferenceEarliestStartDate(res.info.conference.earliestStartDate);
           setConferenceLatestEndDate(res.info.conference.latestEndDate);
-          setConferenceDays(res.info.conference.days);
           handleStartDateChange(res.info.conference.earliestStartDate);
           handleEndDateChange(res.info.conference.latestEndDate);
         }
@@ -144,7 +142,7 @@ function RegisterForConference(props) {
                       value={startDate}
                       onChange={handleStartDateChange}
                       minDate={conferenceEarliestStartDate}
-                      maxDate={conferenceLatestEndDate - 5}
+                      maxDate={conferenceLatestEndDate}
                       KeyboardButtonProps={{
                         "aria-label": "change earliest start date"
                       }}
@@ -158,7 +156,7 @@ function RegisterForConference(props) {
                       label="Latest Possible Possible End Date"
                       value={endDate}
                       onChange={handleEndDateChange}
-                      minDate={conferenceEarliestStartDate - 5}
+                      minDate={conferenceEarliestStartDate}
                       maxDate={conferenceLatestEndDate}
                       KeyboardButtonProps={{
                         "aria-label": "change latest end date"
