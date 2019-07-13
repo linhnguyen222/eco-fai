@@ -27,9 +27,16 @@ const createModels = () => {
     days: Number,
     organizer: String
   });
+  const InterestRegistration = dynamoose.model("InterestRegistration", {
+    conferenceSlug: String,
+    from: String,
+    startDate: Date,
+    endDate: Date
+  });
 
   return {
-    Conference
+    Conference,
+    InterestRegistration
   };
 };
 
@@ -76,6 +83,21 @@ module.exports = app => {
       info: {
         slug: conference.slug
       }
+    });
+  });
+  app.post("/api/register-conference-interest", async (req, res) => {
+    const { info } = req.body;
+    const { InterestRegistration } = await lazyLoadModels();
+
+    const registration = new InterestRegistration({
+      conferenceSlug: info.slug,
+      startDate: info.startDate,
+      endDate: info.endDate,
+      from: info.from
+    });
+    await registration.save();
+    res.json({
+      status: "ok"
     });
   });
   app.get("/api/conferences", async (req, res) => {
