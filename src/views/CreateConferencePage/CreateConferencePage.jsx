@@ -71,6 +71,7 @@ function CreateConferencePage(props) {
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [organizer, setOrganizer] = React.useState("");
+  const [destinations, setDestinations] = React.useState([])
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -94,6 +95,12 @@ function CreateConferencePage(props) {
 
   function handleOrganizerChange(event) {
     setOrganizer(event.target.value);
+  }
+
+  function handleDestinationsChange(event) {
+    setDestinations(
+      event.target.value.split(",").map(s => s.replace(/^\s+/, ""))
+    );
   }
 
   function handleCreateNewConferenceSubmission() {
@@ -197,6 +204,21 @@ function CreateConferencePage(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <CustomInput
+                    labelText="Comma Separated Destinations in Priority Order"
+                    id="destinations"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    inputProps={{
+                      value: destinations.join(", "),
+                      onChange: handleDestinationsChange
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <CustomInput
                     labelText="Description"
                     id="about-me"
                     formControlProps={{
@@ -222,7 +244,8 @@ function CreateConferencePage(props) {
                     organizer,
                     startDate,
                     endDate,
-                    days
+                    days,
+                    destinations
                   ])
                 }
                 onClick={handleCreateNewConferenceSubmission}

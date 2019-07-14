@@ -29,7 +29,8 @@ const createModels = () => {
     earliestStartDate: Date,
     latestEndDate: Date,
     days: Number,
-    organizer: String
+    organizer: String,
+    locationPreferences: Array
   });
   const InterestRegistration = dynamoose.model("InterestRegistration", {
     conferenceSlug: String,
