@@ -113,6 +113,12 @@ function RegisterForConference(props) {
     });
   }
 
+  const conferenceInfoLoaded = !!(
+    conferenceName.length &&
+    conferenceDescription.length &&
+    conferenceOrganizer.length
+  );
+
   if (conferenceInfoState === "NOT_FETCHED") {
     setConferenceInfoState("WAITING");
     fetch(`/api/conference-proposal/${slug}`)
@@ -138,7 +144,7 @@ function RegisterForConference(props) {
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <GridContainer>
-        <GridItem xs={12} sm={12} md={8}>
+        <GridItem xs={12} sm={12} md={conferenceInfoLoaded ? 8 : 12}>
           <Card>
             <CardHeader color="primary">
               <h4 className={classes.cardTitleWhite}>
@@ -209,29 +215,27 @@ function RegisterForConference(props) {
             </CardFooter>
           </Card>
         </GridItem>
-        {conferenceName.length &&
-          conferenceDescription.length &&
-          conferenceOrganizer.length && (
-            <GridItem xs={12} sm={12} md={4}>
-              <Card profile>
-                <CardAvatar profile>
-                  <a href="#pablo" onClick={e => e.preventDefault()}>
-                    <img src={avatar} alt="..." />
-                  </a>
-                </CardAvatar>
-                <CardBody profile>
-                  <h6 className={classes.cardCategory}>
-                    {conferenceOrganizer}
-                  </h6>
-                  <h4 className={classes.cardTitle}>{conferenceName}</h4>
-                  <p className={classes.description}>{conferenceDescription}</p>
-                  <Button color="primary" round>
-                    Follow
-                  </Button>
-                </CardBody>
-              </Card>
-            </GridItem>
-          )}
+        {conferenceInfoLoaded ? (
+          <GridItem xs={12} sm={12} md={4}>
+            <Card profile>
+              <CardAvatar profile>
+                <a href="#pablo" onClick={e => e.preventDefault()}>
+                  <img src={avatar} alt="..." />
+                </a>
+              </CardAvatar>
+              <CardBody profile>
+                <h6 className={classes.cardCategory}>{conferenceOrganizer}</h6>
+                <h4 className={classes.cardTitle}>{conferenceName}</h4>
+                <p className={classes.description}>{conferenceDescription}</p>
+                <Button color="primary" round>
+                  Follow
+                </Button>
+              </CardBody>
+            </Card>
+          </GridItem>
+        ) : (
+          <div />
+        )}
       </GridContainer>
     </MuiPickersUtilsProvider>
   );
