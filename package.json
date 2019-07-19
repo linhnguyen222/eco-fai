@@ -15,6 +15,7 @@
     "dynalite": "^2.3.1",
     "dynamoose": "^1.10.0",
     "history": "4.9.0",
+    "node-fetch": "^2.6.0",
     "perfect-scrollbar": "1.4.0",
     "prop-types": "15.7.2",
     "react": "16.8.6",
