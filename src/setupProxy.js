@@ -2,6 +2,7 @@ const dynamoose = require("dynamoose");
 const dynalite = require("dynalite");
 const express = require("express");
 const dateFns = require("date-fns");
+const fetch = require("node-fetch");
 
 const dateMax = dateFns.max;
 const dateMin = dateFns.min;
@@ -30,7 +31,8 @@ const createModels = () => {
     latestEndDate: Date,
     days: Number,
     organizer: String,
-    locationPreferences: Array
+    locationPreferences: Array,
+    airports: Array
   });
   const InterestRegistration = dynamoose.model("InterestRegistration", {
     conferenceSlug: String,
@@ -65,6 +67,29 @@ const lazyLoadModelsClosure = () => {
   };
 };
 
+const findNearbyAirports = async cities => {
+  const AIRLABS_API_KEY = process.env.AIRLABS_API_KEY;
+  const AIRLABS_URL = `http://airlabs.co/api/v6/autocomplete?api_key=${AIRLABS_API_KEY}`;
+  let airports = [];
+
+  for (let city of cities) {
+    console.log(`${AIRLABS_URL}&query=${city}`);
+    const { response } = await fetch(`${AIRLABS_URL}&query=${city}`).then(r =>
+      r.json()
+    );
+    //console.log(JSON.stringify(response, null, 4));
+    Array.prototype.push.apply(
+      airports,
+      response.airports_by_cities.map(c => ({
+        ...c,
+        city
+      }))
+    );
+  }
+
+  return airports;
+};
+
 module.exports = app => {
   const lazyLoadModels = lazyLoadModelsClosure();
 
@@ -72,6 +97,7 @@ module.exports = app => {
   app.post("/api/register-conference", async (req, res) => {
     const { info } = req.body;
     const { Conference } = await lazyLoadModels();
+    const airports = await findNearbyAirports(info.locationPreferences);
 
     const conference = new Conference({
       slug: slugify(info.name),
@@ -80,7 +106,9 @@ module.exports = app => {
       earliestStartDate: new Date(info.earliestStartDate),
       latestEndDate: new Date(info.latestEndDate),
       days: info.days,
-      organizer: info.organizer
+      organizer: info.organizer,
+      locationPreferences: info.locationPreferences,
+      airports: airports
     });
     await conference.save();
     res.json({
