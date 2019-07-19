@@ -73,11 +73,9 @@ const findNearbyAirports = async cities => {
   let airports = [];
 
   for (let city of cities) {
-    console.log(`${AIRLABS_URL}&query=${city}`);
     const { response } = await fetch(`${AIRLABS_URL}&query=${city}`).then(r =>
       r.json()
     );
-    //console.log(JSON.stringify(response, null, 4));
     Array.prototype.push.apply(
       airports,
       response.airports_by_cities.map(c => ({
