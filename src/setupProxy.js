@@ -1,6 +1,10 @@
 const dynamoose = require("dynamoose");
 const dynalite = require("dynalite");
 const express = require("express");
+const dateFns = require("date-fns");
+
+const dateMax = dateFns.max;
+const dateMin = dateFns.min;
 
 const startUpAndReturnDynamo = async () => {
   const dynaliteServer = dynalite();
@@ -25,11 +29,19 @@ const createModels = () => {
     earliestStartDate: Date,
     latestEndDate: Date,
     days: Number,
-    organizer: String
+    organizer: String,
+    locationPreferences: Array
+  });
+  const InterestRegistration = dynamoose.model("InterestRegistration", {
+    conferenceSlug: String,
+    from: String,
+    startDate: Date,
+    endDate: Date
   });
 
   return {
-    Conference
+    Conference,
+    InterestRegistration
   };
 };
 
@@ -78,6 +90,21 @@ module.exports = app => {
       }
     });
   });
+  app.post("/api/register-conference-interest", async (req, res) => {
+    const { info } = req.body;
+    const { InterestRegistration } = await lazyLoadModels();
+
+    const registration = new InterestRegistration({
+      conferenceSlug: info.slug,
+      startDate: info.startDate,
+      endDate: info.endDate,
+      from: info.from
+    });
+    await registration.save();
+    res.json({
+      status: "ok"
+    });
+  });
   app.get("/api/conferences", async (req, res) => {
     const { Conference } = await lazyLoadModels();
     const conferences = await Conference.scan().exec();
@@ -86,6 +113,42 @@ module.exports = app => {
       status: "ok",
       info: {
         conferences: conferences.map(c => c.slug)
+      }
+    });
+  });
+  app.get("/api/conference-interest/:slug", async (req, res) => {
+    const { Conference, InterestRegistration } = await lazyLoadModels();
+    const conferences = await Conference.query("slug")
+      .eq(req.params.slug)
+      .exec();
+
+    if (!conferences.length) {
+      res.json({
+        status: "err",
+        error: {
+          code: "NO_SUCH_CONFERENCE",
+          msg: `No such conference ${req.params.slug}`
+        }
+      });
+      return;
+    }
+
+    const conference = conferences[0];
+    const registrations = await InterestRegistration.query("conferenceSlug")
+      .eq(conference.slug)
+      .exec();
+
+    res.json({
+      status: "ok",
+      info: {
+        destinations: conference.destinations,
+        earliestStartDate: dateMin(registrations.map(r => r.startDate)),
+        latestEndDate: dateMax(registrations.map(r => r.endDate)),
+        scheduling: registrations.map(r => ({
+          from: r.from,
+          startDate: r.startDate,
+          endDate: r.endDate
+        }))
       }
     });
   });

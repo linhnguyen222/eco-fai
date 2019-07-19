@@ -20,6 +20,7 @@ import React from "react";
 import PropTypes from "prop-types";
 // date-io utils
 import DateFnsUtils from "@date-io/date-fns";
+import { addDays, max as dateMax } from "date-fns";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import FormControl from "@material-ui/core/FormControl";
@@ -57,12 +58,20 @@ const styles = {
   }
 };
 
-function UserProfile(props) {
+const allSet = args => {
+  return args.reduce((value, a) => value && a);
+};
+
+function CreateConferencePage(props) {
   const { classes } = props;
 
-  const [startDate, setStartDate] = React.useState(Date.now());
-  const [endDate, setEndDate] = React.useState(Date.now());
+  const [startDate, setStartDate] = React.useState(new Date());
   const [days, setDays] = React.useState(5);
+  const [endDate, setEndDate] = React.useState(addDays(startDate, 5));
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [organizer, setOrganizer] = React.useState("");
+  const [destinations, setDestinations] = React.useState([])
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -74,6 +83,44 @@ function UserProfile(props) {
 
   function handleDaysChange(days) {
     setDays(Number(days));
+  }
+
+  function handleDescriptionChange(event) {
+    setDescription(event.target.value);
+  }
+
+  function handleNameChange(event) {
+    setName(event.target.value);
+  }
+
+  function handleOrganizerChange(event) {
+    setOrganizer(event.target.value);
+  }
+
+  function handleDestinationsChange(event) {
+    setDestinations(
+      event.target.value.split(",").map(s => s.replace(/^\s+/, ""))
+    );
+  }
+
+  function handleCreateNewConferenceSubmission() {
+    fetch("/api/register-conference", {
+      url: "/api/register-conference",
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify({
+        info: {
+          name,
+          organizer,
+          days,
+          description,
+          earliestStartDate: startDate,
+          latestEndDate: endDate
+        }
+      })
+    });
   }
 
   return (
@@ -95,6 +142,10 @@ function UserProfile(props) {
                     formControlProps={{
                       fullWidth: true
                     }}
+                    inputProps={{
+                      value: name,
+                      onChange: handleNameChange
+                    }}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={7}>
@@ -103,6 +154,10 @@ function UserProfile(props) {
                     id="organizer"
                     formControlProps={{
                       fullWidth: true
+                    }}
+                    inputProps={{
+                      value: organizer,
+                      onChange: handleOrganizerChange
                     }}
                   />
                 </GridItem>
@@ -127,6 +182,7 @@ function UserProfile(props) {
                       id="end-date-picker"
                       label="Latest Possible Possible End Date"
                       value={endDate}
+                      minDate={dateMax(endDate, addDays(startDate, days))}
                       onChange={handleEndDateChange}
                       KeyboardButtonProps={{
                         "aria-label": "change latest end date"
@@ -148,6 +204,21 @@ function UserProfile(props) {
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <CustomInput
+                    labelText="Comma Separated Destinations in Priority Order"
+                    id="destinations"
+                    formControlProps={{
+                      fullWidth: true
+                    }}
+                    inputProps={{
+                      value: destinations.join(", "),
+                      onChange: handleDestinationsChange
+                    }}
+                  />
+                </GridItem>
+              </GridContainer>
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <CustomInput
                     labelText="Description"
                     id="about-me"
                     formControlProps={{
@@ -155,14 +226,32 @@ function UserProfile(props) {
                     }}
                     inputProps={{
                       multiline: true,
-                      rows: 5
+                      rows: 5,
+                      value: description,
+                      onChange: handleDescriptionChange
                     }}
                   />
                 </GridItem>
               </GridContainer>
             </CardBody>
             <CardFooter>
-              <Button color="primary">Create New Conference</Button>
+              <Button
+                color="primary"
+                disabled={
+                  !allSet([
+                    name,
+                    description,
+                    organizer,
+                    startDate,
+                    endDate,
+                    days,
+                    destinations
+                  ])
+                }
+                onClick={handleCreateNewConferenceSubmission}
+              >
+                Create New Conference
+              </Button>
             </CardFooter>
           </Card>
         </GridItem>
@@ -171,8 +260,8 @@ function UserProfile(props) {
   );
 }
 
-UserProfile.propTypes = {
+CreateConferencePage.propTypes = {
   classes: PropTypes.object
 };
 
-export default withStyles(styles)(UserProfile);
+export default withStyles(styles)(CreateConferencePage);
