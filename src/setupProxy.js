@@ -335,7 +335,11 @@ const computeParetoOptimalCostEmissionsTradeoff = emissionsPriceTable =>
   });
 
 const fromEntries = arr =>
-  Object.assign({}, ...Array.from(arr, ([k, v]) => ({ [k]: v })));
+  Object.assign({}, ...arr.map(([k, v]) => ({ [k]: v })));
+
+const deduplicateKVs = arr => {
+  return Object.entries(fromEntries(arr));
+};
 
 module.exports = app => {
   const lazyLoadModels = lazyLoadModelsClosure();
