@@ -467,6 +467,49 @@ module.exports = app => {
       }
     });
   });
+  app.post("/api/update-conference/:slug", async (req, res) => {
+    const { slug } = req.params;
+    const { info } = req.body;
+    const { Conference } = await lazyLoadModels();
+
+    const conferences = await Conference.query("slug")
+      .eq(slug)
+      .exec();
+
+    if (!conferences.length) {
+      res.json({
+        status: "err",
+        error: {
+          code: "NO_SUCH_CONFERENCE",
+          msg: `No such conference ${req.params.slug}`
+        }
+      });
+      return;
+    }
+    const conference = conferences[0];
+
+    await Conference.update(
+      { slug },
+      {
+        name: info.name || conference.name,
+        description: info.description || conference.description,
+        earliestStartDate:
+          new Date(info.earliestStartDate) || conference.earliestStartDate,
+        latestEndDate: new Date(info.latestEndDate) || conference.latestEndDate,
+        days: info.days || conference.days,
+        organizer: info.organizer || conference.organizer,
+        locationPreferences:
+          info.locationPreferences || conference.locationPreferences,
+        airports: await findNearbyAirports(info.locationPreferences)
+      }
+    );
+    res.json({
+      status: "ok",
+      info: {
+        slug: conference.slug
+      }
+    });
+  });
   app.post("/api/register-conference-interest", async (req, res) => {
     const { info } = req.body;
     const {
