@@ -16,6 +16,7 @@
     "dynamoose": "^1.10.0",
     "history": "4.9.0",
     "node-fetch": "^2.6.0",
+    "pareto-frontier": "^1.1.1",
     "perfect-scrollbar": "1.4.0",
     "prop-types": "15.7.2",
     "randomstring": "^1.1.5",

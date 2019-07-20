@@ -3,6 +3,7 @@ const dynalite = require("dynalite");
 const express = require("express");
 const dateFns = require("date-fns");
 const fetch = require("node-fetch");
+const pf = require("pareto-frontier");
 const randomstring = require("randomstring");
 
 const dateMax = dateFns.max;
@@ -307,8 +308,88 @@ const queryFlightsForRegistrant = async (conference, interest) => {
   }
 };
 
+// Based on https://www.carbonindependent.org/22.html
+const CARBON_EMISSIONS_PER_HOUR = 90;
+const CARBON_EMISSIONS_PER_MINUTE = CARBON_EMISSIONS_PER_HOUR / 60;
+
+const sum = array => array.reduce((s, e) => s + e, 0);
+
+const computeTotalTimeFromTimestamps = timestampPairs =>
+  sum(
+    timestampPairs.map(([depart, arrive]) =>
+      dateFns.differenceInMinutes(arrive, depart)
+    )
+  );
+
+const computeParetoOptimalCostEmissionsTradeoff = emissionsPriceTable =>
+  pf.getParetoFrontier(emissionsPriceTable, {
+    optimize: "bottomLeft"
+  });
+
 module.exports = app => {
   const lazyLoadModels = lazyLoadModelsClosure();
+
+  const computeFlightTimesAndCostsTableFromItineraries = async (
+    possibleFlightInformation,
+    airport
+  ) => {
+    const {
+      TravelItinerary,
+      TravelRouting,
+      TravelLeg
+    } = await lazyLoadModels();
+
+    const itineraries = (await Promise.all(
+      possibleFlightInformation.map(async itinId =>
+        TravelItinerary.queryOne("id")
+          .eq(itinId)
+          .exec()
+      )
+    )).filter(i => !!i);
+    const routingPrices = await Promise.all(
+      itineraries
+        .map(itin =>
+          itin.routing_ids.map(routingId => ({
+            routingId,
+            price: itin.price,
+            agony: itin.agony
+          }))
+        )
+        .flat()
+        .map(async ({ routingId, price, agony }) => ({
+          routing: await TravelRouting.queryOne("id")
+            .eq(routingId)
+            .exec(),
+          price,
+          agony
+        }))
+    );
+    const filteredRoutingPrices = routingPrices.filter(i => !!i.routing);
+    const legsPrice = await Promise.all(
+      filteredRoutingPrices.map(async ({ routing, price, agony }) => ({
+        legs: (await Promise.all(
+          routing.legs.map(legId =>
+            TravelLeg.queryOne("id")
+              .eq(legId)
+              .exec()
+          )
+        )).filter(i => !!i),
+        price,
+        agony
+      }))
+    );
+    const filteredLegsPrice = legsPrice.filter(
+      ({ legs }) => legs[legs.length - 1].to_code === airport.code
+    );
+    return filteredLegsPrice.map(({ legs, price, agony }) => ({
+      emissions:
+        computeTotalTimeFromTimestamps(
+          legs.map(leg => [leg.depart_iso, leg.arrive_iso])
+        ) * CARBON_EMISSIONS_PER_MINUTE,
+      price,
+      agony
+    }));
+  };
 
   app.use(express.json());
   app.post("/api/register-conference", async (req, res) => {
@@ -547,7 +628,23 @@ module.exports = app => {
           from: r.from,
           startDate: r.startDate,
           endDate: r.endDate
-        }))
+        })),
+        destinationOptimality: await Promise.all(
+          registrations.map(async r => ({
+            from: r.from,
+            destinationFrontier: await Promise.all(
+              conference.airports.map(async destAirport => ({
+                destAirport,
+                tradeoff: computeParetoOptimalCostEmissionsTradeoff(
+                  (await computeFlightTimesAndCostsTableFromItineraries(
+                    r.possibleFlightInformation,
+                    destAirport
+                  )).map(({ emissions, price }) => [emissions, price])
+                ).map(([emissions, price]) => ({ emissions, price }))
+              }))
+            )
+          }))
+        )
       }
     });
   });
