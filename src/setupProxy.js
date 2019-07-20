@@ -7,7 +7,9 @@ const pf = require("pareto-frontier");
 const randomstring = require("randomstring");
 
 // eslint-disable-next-line no-unused-vars
-const arrayFlat = require('array-flat-polyfill');
+const arrayFlat = require("array-flat-polyfill");
+// eslint-disable-next-line no-unused-vars
+const objectPolyfill = require("es7-object-polyfill");
 
 const dateMax = dateFns.max;
 const dateMin = dateFns.min;
