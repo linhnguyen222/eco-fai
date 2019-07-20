@@ -7,7 +7,9 @@ const pf = require("pareto-frontier");
 const randomstring = require("randomstring");
 
 // eslint-disable-next-line no-unused-vars
-const arrayFlat = require('array-flat-polyfill');
+const arrayFlat = require("array-flat-polyfill");
+// eslint-disable-next-line no-unused-vars
+const objectPolyfill = require("es7-object-polyfill");
 
 const dateMax = dateFns.max;
 const dateMin = dateFns.min;
@@ -24,7 +26,17 @@ const createDynamooseInstance = () => {
     secretAccessKey: "SECRET",
     region: "us-east-1"
   });
-  dynamoose.local(process.env.DYNAMO_DB_HOST || "http://localhost:8000"); // This defaults to "http://localhost:8000"
+  if (
+    !(
+      process.env.AWS_ACCESS_KEY_ID &&
+      process.env.AWS_SECRET_ACCESS_KEY &&
+      process.AWS_REGION
+    )
+  ) {
+    dynamoose.local(process.env.DYNAMO_DB_HOST || "http://localhost:8000"); // This defaults to "http://localhost:8000"
+  } else {
+    dynamoose.ddb();
+  }
 };
 
 const createModels = () => {
@@ -259,10 +271,11 @@ const queryFlightsForRegistrant = async (conference, interest) => {
   // Its horrible, I know.
   //
   // Stop looking at me.
-  let possibleFlightInformation = [];
 
   let startDate = conference.earliestStartDate;
   dateFns.addDays(conference.latestEndDate, 1);
+
+  let promises = [];
 
   while (
     dateFns.differenceInDays(
@@ -295,25 +308,22 @@ const queryFlightsForRegistrant = async (conference, interest) => {
         let url = `https://apidojo-hipmunk-v1.p.rapidapi.com/flights/create-session?${encodeQuery(
           parameters
         )}`;
-        let routes = await fetch(url, {
-          method: "GET",
-          headers: {
-            "X-RapidAPI-Host": "apidojo-hipmunk-v1.p.rapidapi.com",
-            "X-RapidAPI-Key": process.env.HIPMUNK_API_KEY
-          }
-        }).then(r => r.json());
-
-        if (routes.errors) {
-          break;
-        }
-
-        possibleFlightInformation.push(routes);
-        startDate = dateFns.addDays(startDate, 1);
+        console.log(url);
+        promises.push(
+          fetch(url, {
+            method: "GET",
+            headers: {
+              "X-RapidAPI-Host": "apidojo-hipmunk-v1.p.rapidapi.com",
+              "X-RapidAPI-Key": process.env.HIPMUNK_API_KEY
+            }
+          }).then(r => r.json())
+        );
       }
     }
-
-    return possibleFlightInformation;
+    startDate = dateFns.addDays(startDate, 1);
   }
+
+  return (await Promise.all(promises)).filter(p => !p.errors);
 };
 
 // Based on https://www.carbonindependent.org/22.html
@@ -335,20 +345,32 @@ const computeParetoOptimalCostEmissionsTradeoff = emissionsPriceTable =>
   });
 
 const fromEntries = arr =>
-  Object.assign({}, ...Array.from(arr, ([k, v]) => ({ [k]: v })));
+  Object.assign({}, ...arr.map(([k, v]) => ({ [k]: v })));
+
+const deduplicateKVs = arr => {
+  return Object.entries(fromEntries(arr));
+};
 
 module.exports = app => {
   const lazyLoadModels = lazyLoadModelsClosure();
 
   const computeFlightTimesAndCostsTableFromItineraries = async (
     possibleFlightInformation,
-    airport
+    destinationCity
   ) => {
     const {
+      AirportInfo,
       TravelItinerary,
       TravelRouting,
       TravelLeg
     } = await lazyLoadModels();
+
+    const destinationAirports = await AirportInfo.scan("city")
+      .eq(destinationCity)
+      .exec();
+    const destinationAirportCodes = new Set(
+      destinationAirports.map(({ code }) => code)
+    );
 
     const itineraries = (await TravelItinerary.scan({
       FilterExpression: "contains(:ids, id)",
@@ -407,8 +429,8 @@ module.exports = app => {
         agony
       })
     );
-    const filteredLegsPrice = legsPrice.filter(
-      ({ legs }) => legs[legs.length - 1].to_code === airport.code
+    const filteredLegsPrice = legsPrice.filter(({ legs }) =>
+      destinationAirportCodes.has(legs[legs.length - 1].to_code)
     );
     return filteredLegsPrice.map(({ legs, price, agony }) => ({
       emissions:
@@ -495,102 +517,87 @@ module.exports = app => {
       registration
     );
 
-    const airportInfoPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.airports || {}).map(async ([k, v]) => {
-        const airports = await AirportInfo.query("code")
-          .eq(k)
-          .exec();
-
-        if (!airports.length) {
-          let info = new AirportInfo({
-            code: k,
-            city: v.city,
-            name: v.name
-          });
-          await info.save();
-        }
-      })
+    const airportInfoPromises = await AirportInfo.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info => Object.entries(info.airports || {}))
+          .flat()
+      ).map(([code, { city, name }]) => ({
+        code,
+        city,
+        name
+      }))
     );
 
-    const airlineInfoPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.airlines || {}).map(async ([k, v]) => {
-        const airlines = await AirlineInfo.query("code")
-          .eq(k)
-          .exec();
-
-        if (!airlines.length) {
-          let info = new AirlineInfo({
-            code: k,
-            name: v.name
-          });
-          await info.save();
-        }
-      })
+    const airlineInfoPromises = await AirlineInfo.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info => Object.entries(info.airlines || {}))
+          .flat()
+      ).map(([code, { name }]) => ({ code, name }))
     );
 
-    const travelItineraryPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.itins)
-        // Filter out flight itineraries that have no routings
-        // that are better than any other routing on any metric
-        .filter(
-          ([, v]) =>
-            v.routing_idens.filter(r => info.routings[r].dominated_by === null)
-              .length
-        )
-        .map(async ([k, v]) => {
-          const itins = await TravelItinerary.query("id")
-            .eq(k)
-            .exec();
+    // Keep track of feasible itineraries here, we'll need them later
+    const feasibleItineraries = [];
 
-          if (!itins.length) {
-            let itin = new TravelItinerary({
-              id: k,
-              agony: v.agony,
-              price: v.price,
-              routing_ids: v.routing_idens
-            });
-            await itin.save();
-          }
+    const travelItineraryPromises = await TravelItinerary.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info =>
+            Object.entries(info.itins)
+              // Filter out flight itineraries that have no routings
+              // that are better than any other routing on any metric
+              .filter(([, v]) => {
+                return v.routing_idens.filter(
+                  r => info.routings[r].dominated_by === null
+                ).length;
+              })
+          )
+          .flat()
+          .map(([id, v]) => {
+            feasibleItineraries.push(id);
+            return [id, v];
+          })
+      ).map(([id, { agony, price, routing_idens }]) => ({
+        id,
+        agony,
+        price,
+        routing_ids: routing_idens
+      }))
+    );
+
+    const travelRoutingPromises = await TravelRouting.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info =>
+            // Don't want any routings that are worse on all metrics than any other routing
+            Object.entries(info.routings).filter(
+              ([, v]) => v.dominated_by === null
+            )
+          )
+          .flat()
+      ).map(([id, { leg_idens }]) => ({
+        id,
+        legs: leg_idens
+      }))
+    );
+
+    const travelLegPromises = TravelLeg.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation.map(info => Object.entries(info.legs)).flat()
+      ).map(
+        ([
+          id,
+          { marketing_num, arrive_iso, depart_iso, to_code, from_code }
+        ]) => ({
+          id,
+          flight_no: marketing_num.join(""),
+          arrive_iso: new Date(arrive_iso),
+          depart_iso: new Date(depart_iso),
+          to_code: to_code,
+          from_code: from_code
         })
-    );
-
-    const travelRoutingPromises = possibleFlightInformation.map(info =>
-      // Don't want any routings that are worse on all metrics than any other routing
-      Object.entries(info.routings)
-        .filter(([, v]) => v.dominated_by === null)
-        .map(async ([k, v]) => {
-          const routings = await TravelRouting.query("id")
-            .eq(k)
-            .exec();
-
-          if (!routings.length) {
-            let routing = new TravelRouting({
-              id: k,
-              legs: v.leg_idens
-            });
-            await routing.save();
-          }
-        })
-    );
-
-    const travelLegPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.legs).map(async ([k, v]) => {
-        const legs = await TravelLeg.query("id")
-          .eq(k)
-          .exec();
-
-        if (!legs.length) {
-          let leg = new TravelLeg({
-            id: k,
-            flight_no: v.marketing_num.join(""),
-            arrive_iso: new Date(v.arrive_iso),
-            depart_iso: new Date(v.depart_iso),
-            to_code: v.to_code,
-            from_code: v.from_code
-          });
-          await leg.save();
-        }
-      })
+      )
     );
 
     await Promise.all(
@@ -603,15 +610,7 @@ module.exports = app => {
       ].flat()
     );
 
-    registration.possibleFlightInformation = await possibleFlightInformation
-      .map(info => Object.keys(info.itins))
-      .flat()
-      .filter(
-        async id =>
-          (await TravelItinerary.query("id")
-            .eq(id)
-            .exec()).length
-      );
+    registration.possibleFlightInformation = feasibleItineraries;
     await registration.save();
     console.log(`Finished registering participant from ${info.from}`);
   });
@@ -653,7 +652,7 @@ module.exports = app => {
     res.json({
       status: "ok",
       info: {
-        destinations: conference.destinations,
+        destinations: conference.locationPreferences,
         earliestStartDate: dateMin(registrations.map(r => r.startDate)),
         latestEndDate: dateMax(registrations.map(r => r.endDate)),
         scheduling: registrations.map(r => ({
@@ -665,12 +664,12 @@ module.exports = app => {
           registrations.map(async r => ({
             from: r.from,
             destinationFrontier: await Promise.all(
-              conference.airports.map(async destAirport => ({
-                destAirport,
+              conference.locationPreferences.map(async destination => ({
+                destination,
                 tradeoff: computeParetoOptimalCostEmissionsTradeoff(
                   (await computeFlightTimesAndCostsTableFromItineraries(
                     r.possibleFlightInformation,
-                    destAirport
+                    destination
                   )).map(({ emissions, price }) => [emissions, price])
                 ).map(([emissions, price]) => ({ emissions, price }))
               }))

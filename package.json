@@ -15,6 +15,7 @@
     "date-fns": "^2.0.0-beta.2",
     "dynalite": "^2.3.1",
     "dynamoose": "^1.10.0",
+    "es7-object-polyfill": "^1.0.0",
     "history": "4.9.0",
     "node-fetch": "^2.6.0",
     "pareto-frontier": "^1.1.1",
