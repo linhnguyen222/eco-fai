@@ -67,6 +67,112 @@ const lazyLoadModelsClosure = () => {
   };
 };
 
+const WHITELISTED_AIRPORTS = new Set(
+  `ATL
+  PEK
+  LHR
+  ORD
+  HND
+  LAX
+  CDG
+  DFW
+  FRA
+  HKG
+  DEN
+  DXB
+  CGK
+  AMS
+  MAD
+  BKK
+  JFK
+  SIN
+  CAN
+  LAS
+  PVG
+  SFO
+  PHX
+  IAH
+  CLT
+  MIA
+  MUC
+  KUL
+  FCO
+  IST
+  SYD
+  MCO
+  ICN
+  DEL
+  BCN
+  LGW
+  EWR
+  YYZ
+  SHA
+  MSP
+  SEA
+  DTW
+  PHL
+  BOM
+  GRU
+  MNL
+  CTU
+  BOS
+  SZX
+  MEL
+  NRT
+  ORY
+  MEX
+  DME
+  AYT
+  TPE
+  ZRH
+  LGA
+  FLL
+  IAD
+  PMI
+  CPH
+  SVO
+  BWI
+  KMG
+  VIE
+  OSL
+  JED
+  BNE
+  SLC
+  DUS
+  BOG
+  MXP
+  JNB
+  ARN
+  MAN
+  MDW
+  DCA
+  BRU
+  DUB
+  GMP
+  DOH
+  STN
+  HGH
+  CJU
+  YVR
+  TXL
+  SAN
+  TPA
+  CGH
+  BSB
+  CTS
+  XMN
+  RUH
+  FUK
+  GIG
+  HEL
+  LIS
+  ATH
+  AKL
+`
+    .split("\n")
+    .map(a => a.trim())
+);
+
 const findNearbyAirports = async cities => {
   const AIRLABS_API_KEY = process.env.AIRLABS_API_KEY;
   const AIRLABS_URL = `http://airlabs.co/api/v6/autocomplete?api_key=${AIRLABS_API_KEY}`;
@@ -78,10 +184,12 @@ const findNearbyAirports = async cities => {
     );
     Array.prototype.push.apply(
       airports,
-      response.airports_by_cities.map(c => ({
-        ...c,
-        city
-      }))
+      response.airports_by_cities
+        .filter(c => WHITELISTED_AIRPORTS.has(c.code))
+        .map(c => ({
+          ...c,
+          city
+        }))
     );
   }
 
