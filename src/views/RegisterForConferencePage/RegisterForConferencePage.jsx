@@ -41,8 +41,8 @@ import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
 
-import avatar from "assets/img/faces/marc.jpg";
-
+import avatar from "assets/img/copenhagen.png";
+// import avatar from "assets/img/faces/marc.jpg";
 const styles = {
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
@@ -84,6 +84,7 @@ function RegisterForConference(props) {
   );
   const [conferenceDays, setConferenceDays] = React.useState(5);
 
+  const [register, setRegisterSuccess] = React.useState(false);
   function handleStartDateChange(date) {
     setStartDate(date);
   }
@@ -110,7 +111,15 @@ function RegisterForConference(props) {
           from
         }
       })
-    });
+    })
+      .then(r => r.json())
+      .then(() => {
+        setRegisterSuccess(true);
+      })
+      .catch(error => {
+        alert("Ooops! Something went wrong, can you register again?");
+        throw error;
+      });
   }
 
   const conferenceInfoLoaded = !!(
@@ -145,81 +154,96 @@ function RegisterForConference(props) {
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <GridContainer>
         <GridItem xs={12} sm={12} md={conferenceInfoLoaded ? 8 : 12}>
-          <Card>
-            <CardHeader color="primary">
-              <h4 className={classes.cardTitleWhite}>
-                Register your interest for{" "}
-                {`${conferenceName ? conferenceName : "this conference"}`}
-              </h4>
-            </CardHeader>
-            <CardBody profile={conferenceDescription}>
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={12}>
-                  <CustomInput
-                    labelText="Travelling From"
-                    id="from"
-                    inputProps={{
-                      value: from,
-                      onChange: handleFromChange
-                    }}
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                  />
-                </GridItem>
-              </GridContainer>
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={6}>
-                  <FormControl fullWidth>
-                    <KeyboardDatePicker
-                      id="start-date-picker"
-                      label="Earliest Possible Start Date"
-                      value={startDate}
-                      onChange={handleStartDateChange}
-                      minDate={conferenceEarliestStartDate}
-                      maxDate={subDays(conferenceLatestEndDate, conferenceDays)}
-                      KeyboardButtonProps={{
-                        "aria-label": "change earliest start date"
+          {register ? (
+            <Card>
+              <CardHeader color="success">
+                <h4 className={classes.cardTitleWhite}>
+                  Register your interest for{" "}
+                  {`${conferenceName ? conferenceName : "this conference"}`}
+                </h4>
+              </CardHeader>
+              <CardBody>Your registration was successful</CardBody>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader color="primary">
+                <h4 className={classes.cardTitleWhite}>
+                  Register your interest for{" "}
+                  {`${conferenceName ? conferenceName : "this conference"}`}
+                </h4>
+              </CardHeader>
+              <CardBody profile={conferenceDescription}>
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <CustomInput
+                      labelText="Travelling From"
+                      id="from"
+                      inputProps={{
+                        value: from,
+                        onChange: handleFromChange
+                      }}
+                      formControlProps={{
+                        fullWidth: true
                       }}
                     />
-                  </FormControl>
-                </GridItem>
-                <GridItem xs={12} sm={12} md={6}>
-                  <FormControl fullWidth>
-                    <KeyboardDatePicker
-                      id="end-date-picker"
-                      label="Latest Possible Possible End Date"
-                      value={endDate}
-                      onChange={handleEndDateChange}
-                      minDate={addDays(
-                        dateMax(conferenceEarliestStartDate, startDate),
-                        conferenceDays
-                      )}
-                      maxDate={conferenceLatestEndDate}
-                      KeyboardButtonProps={{
-                        "aria-label": "change latest end date"
-                      }}
-                    />
-                  </FormControl>
-                </GridItem>
-              </GridContainer>
-            </CardBody>
-            <CardFooter>
-              <Button
-                color="primary"
-                disabled={!from.length}
-                onClick={handleFollowClicked}
-              >
-                Register My Interest
-              </Button>
-            </CardFooter>
-          </Card>
+                  </GridItem>
+                </GridContainer>
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={6}>
+                    <FormControl fullWidth>
+                      <KeyboardDatePicker
+                        id="start-date-picker"
+                        label="Earliest Possible Start Date"
+                        value={startDate}
+                        onChange={handleStartDateChange}
+                        minDate={conferenceEarliestStartDate}
+                        maxDate={subDays(
+                          conferenceLatestEndDate,
+                          conferenceDays
+                        )}
+                        KeyboardButtonProps={{
+                          "aria-label": "change earliest start date"
+                        }}
+                      />
+                    </FormControl>
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={6}>
+                    <FormControl fullWidth>
+                      <KeyboardDatePicker
+                        id="end-date-picker"
+                        label="Latest Possible Possible End Date"
+                        value={endDate}
+                        onChange={handleEndDateChange}
+                        minDate={addDays(
+                          dateMax(conferenceEarliestStartDate, startDate),
+                          conferenceDays
+                        )}
+                        maxDate={conferenceLatestEndDate}
+                        KeyboardButtonProps={{
+                          "aria-label": "change latest end date"
+                        }}
+                      />
+                    </FormControl>
+                  </GridItem>
+                </GridContainer>
+              </CardBody>
+              <CardFooter>
+                <Button
+                  color="primary"
+                  disabled={!from.length}
+                  onClick={handleFollowClicked}
+                >
+                  Register My Interest
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
         </GridItem>
         {conferenceInfoLoaded ? (
           <GridItem xs={12} sm={12} md={4}>
             <Card profile>
               <CardAvatar profile>
-                <a href="#pablo" onClick={e => e.preventDefault()}>
+                <a href="#cophenhagen" onClick={e => e.preventDefault()}>
                   <img src={avatar} alt="..." />
                 </a>
               </CardAvatar>
