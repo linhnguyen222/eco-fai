@@ -499,102 +499,87 @@ module.exports = app => {
       registration
     );
 
-    const airportInfoPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.airports || {}).map(async ([k, v]) => {
-        const airports = await AirportInfo.query("code")
-          .eq(k)
-          .exec();
-
-        if (!airports.length) {
-          let info = new AirportInfo({
-            code: k,
-            city: v.city,
-            name: v.name
-          });
-          await info.save();
-        }
-      })
+    const airportInfoPromises = await AirportInfo.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info => Object.entries(info.airports || {}))
+          .flat()
+      ).map(([code, { city, name }]) => ({
+        code,
+        city,
+        name
+      }))
     );
 
-    const airlineInfoPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.airlines || {}).map(async ([k, v]) => {
-        const airlines = await AirlineInfo.query("code")
-          .eq(k)
-          .exec();
-
-        if (!airlines.length) {
-          let info = new AirlineInfo({
-            code: k,
-            name: v.name
-          });
-          await info.save();
-        }
-      })
+    const airlineInfoPromises = await AirlineInfo.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info => Object.entries(info.airlines || {}))
+          .flat()
+      ).map(([code, { name }]) => ({ code, name }))
     );
 
-    const travelItineraryPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.itins)
-        // Filter out flight itineraries that have no routings
-        // that are better than any other routing on any metric
-        .filter(
-          ([, v]) =>
-            v.routing_idens.filter(r => info.routings[r].dominated_by === null)
-              .length
-        )
-        .map(async ([k, v]) => {
-          const itins = await TravelItinerary.query("id")
-            .eq(k)
-            .exec();
+    // Keep track of feasible itineraries here, we'll need them later
+    const feasibleItineraries = [];
 
-          if (!itins.length) {
-            let itin = new TravelItinerary({
-              id: k,
-              agony: v.agony,
-              price: v.price,
-              routing_ids: v.routing_idens
-            });
-            await itin.save();
-          }
+    const travelItineraryPromises = await TravelItinerary.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info =>
+            Object.entries(info.itins)
+              // Filter out flight itineraries that have no routings
+              // that are better than any other routing on any metric
+              .filter(([, v]) => {
+                return v.routing_idens.filter(
+                  r => info.routings[r].dominated_by === null
+                ).length;
+              })
+          )
+          .flat()
+          .map(([id, v]) => {
+            feasibleItineraries.push(id);
+            return [id, v];
+          })
+      ).map(([id, { agony, price, routing_idens }]) => ({
+        id,
+        agony,
+        price,
+        routing_ids: routing_idens
+      }))
+    );
+
+    const travelRoutingPromises = await TravelRouting.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation
+          .map(info =>
+            // Don't want any routings that are worse on all metrics than any other routing
+            Object.entries(info.routings).filter(
+              ([, v]) => v.dominated_by === null
+            )
+          )
+          .flat()
+      ).map(([id, { leg_idens }]) => ({
+        id,
+        legs: leg_idens
+      }))
+    );
+
+    const travelLegPromises = TravelLeg.batchPut(
+      deduplicateKVs(
+        possibleFlightInformation.map(info => Object.entries(info.legs)).flat()
+      ).map(
+        ([
+          id,
+          { marketing_num, arrive_iso, depart_iso, to_code, from_code }
+        ]) => ({
+          id,
+          flight_no: marketing_num.join(""),
+          arrive_iso: new Date(arrive_iso),
+          depart_iso: new Date(depart_iso),
+          to_code: new Date(to_code),
+          from_code: new Date(from_code)
         })
-    );
-
-    const travelRoutingPromises = possibleFlightInformation.map(info =>
-      // Don't want any routings that are worse on all metrics than any other routing
-      Object.entries(info.routings)
-        .filter(([, v]) => v.dominated_by === null)
-        .map(async ([k, v]) => {
-          const routings = await TravelRouting.query("id")
-            .eq(k)
-            .exec();
-
-          if (!routings.length) {
-            let routing = new TravelRouting({
-              id: k,
-              legs: v.leg_idens
-            });
-            await routing.save();
-          }
-        })
-    );
-
-    const travelLegPromises = possibleFlightInformation.map(info =>
-      Object.entries(info.legs).map(async ([k, v]) => {
-        const legs = await TravelLeg.query("id")
-          .eq(k)
-          .exec();
-
-        if (!legs.length) {
-          let leg = new TravelLeg({
-            id: k,
-            flight_no: v.marketing_num.join(""),
-            arrive_iso: new Date(v.arrive_iso),
-            depart_iso: new Date(v.depart_iso),
-            to_code: v.to_code,
-            from_code: v.from_code
-          });
-          await leg.save();
-        }
-      })
+      )
     );
 
     await Promise.all(
@@ -607,15 +592,7 @@ module.exports = app => {
       ].flat()
     );
 
-    registration.possibleFlightInformation = await possibleFlightInformation
-      .map(info => Object.keys(info.itins))
-      .flat()
-      .filter(
-        async id =>
-          (await TravelItinerary.query("id")
-            .eq(id)
-            .exec()).length
-      );
+    registration.possibleFlightInformation = feasibleItineraries;
     await registration.save();
     console.log(`Finished registering participant from ${info.from}`);
   });
