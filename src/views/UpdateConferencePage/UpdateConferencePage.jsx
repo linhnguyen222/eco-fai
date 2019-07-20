@@ -152,8 +152,7 @@ function UpdateConferencePage(props) {
           setStartDate(res.info.conference.earliestStartDate);
           setEndDate(res.info.conference.latestEndDate);
           setDays(res.info.conference.days);
-          handleStartDateChange(res.info.conference.earliestStartDate);
-          handleEndDateChange(res.info.conference.latestEndDate);
+          setDestinations(res.info.conference.locationPreferences);
         }
       });
   }
