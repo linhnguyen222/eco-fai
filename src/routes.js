@@ -24,6 +24,7 @@ import LocationOn from "@material-ui/icons/LocationOn";
 import Notifications from "@material-ui/icons/Notifications";
 // core components/views for Admin layout
 import CreateConferencePage from "views/CreateConferencePage/CreateConferencePage.jsx";
+import UpdateConferencePage from "views/UpdateConferencePage/UpdateConferencePage.jsx";
 // import UserProfile from "views/UserProfile/UserProfile.jsx";
 import TableList from "views/TableList/TableList.jsx";
 import Maps from "views/Maps/Maps.jsx";
@@ -36,6 +37,13 @@ const dashboardRoutes = [
     name: "Create",
     icon: Create,
     component: CreateConferencePage,
+    layout: "/admin"
+  },
+  {
+    path: "/update/:slug",
+    name: "Update",
+    icon: Create,
+    component: UpdateConferencePage,
     layout: "/admin"
   },
   {
