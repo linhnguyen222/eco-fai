@@ -346,13 +346,21 @@ module.exports = app => {
 
   const computeFlightTimesAndCostsTableFromItineraries = async (
     possibleFlightInformation,
-    airport
+    destinationCity
   ) => {
     const {
+      AirportInfo,
       TravelItinerary,
       TravelRouting,
       TravelLeg
     } = await lazyLoadModels();
+
+    const destinationAirports = await AirportInfo.scan("city")
+      .eq(destinationCity)
+      .exec();
+    const destinationAirportCodes = new Set(
+      destinationAirports.map(({ code }) => code)
+    );
 
     const itineraries = (await TravelItinerary.scan({
       FilterExpression: "contains(:ids, id)",
@@ -411,8 +419,8 @@ module.exports = app => {
         agony
       })
     );
-    const filteredLegsPrice = legsPrice.filter(
-      ({ legs }) => legs[legs.length - 1].to_code === airport.code
+    const filteredLegsPrice = legsPrice.filter(({ legs }) =>
+      destinationAirportCodes.has(legs[legs.length - 1].to_code)
     );
     return filteredLegsPrice.map(({ legs, price, agony }) => ({
       emissions:
@@ -646,12 +654,12 @@ module.exports = app => {
           registrations.map(async r => ({
             from: r.from,
             destinationFrontier: await Promise.all(
-              conference.airports.map(async destAirport => ({
-                destAirport,
+              conference.locationPreferences.map(async destination => ({
+                destination,
                 tradeoff: computeParetoOptimalCostEmissionsTradeoff(
                   (await computeFlightTimesAndCostsTableFromItineraries(
                     r.possibleFlightInformation,
-                    destAirport
+                    destination
                   )).map(({ emissions, price }) => [emissions, price])
                 ).map(([emissions, price]) => ({ emissions, price }))
               }))
