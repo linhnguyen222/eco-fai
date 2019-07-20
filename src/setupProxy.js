@@ -584,6 +584,7 @@ module.exports = app => {
             .exec()).length
       );
     await registration.save();
+    console.log(`Finished registering participant from ${info.from}`);
   });
   app.get("/api/conferences", async (req, res) => {
     const { Conference } = await lazyLoadModels();
