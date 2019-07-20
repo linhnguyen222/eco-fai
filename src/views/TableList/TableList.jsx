@@ -27,6 +27,7 @@ import Table from "components/Table/Table.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
+import data from "./dump.jsx";
 
 const styles = {
   cardCategoryWhite: {
@@ -59,77 +60,189 @@ const styles = {
 };
 
 function TableList(props) {
-  const { classes } = props;
+  const { classes, match } = props;
+  const slug = match.params.slug;
+  const [destinationInfoState, setDestinationInfoState] = React.useState(
+    "NOT_FETCHED"
+  );
+  const [costTable, setCostTable] = React.useState({});
+  const [emissionTable, setEmissionTable] = React.useState({});
+  const [additionalInfoTable, setadditionalInfoTable] = React.useState({});
+  console.log("meow", data);
+  if (destinationInfoState === "NOT_FETCHED") {
+    setDestinationInfoState("WAITING");
+    fetch(`/api/conference-registrants/${slug}`)
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "err") {
+          setDestinationInfoState(res.error.code);
+        } else {
+          setDestinationInfoState("FETCHED");
+          setCostTable({});
+          setEmissionTable({});
+          setadditionalInfoTable({});
+        }
+      });
+    // .catch(err => {
+    //   alert("Opps Something went wrong");
+    //   throw err;
+    // });
+  }
   return (
-    <GridContainer>
-      <GridItem xs={12} sm={12} md={12}>
-        <Card>
-          <CardHeader color="primary">
-            <h4 className={classes.cardTitleWhite}>Simple Table</h4>
-            <p className={classes.cardCategoryWhite}>
-              Here is a subtitle for this table
-            </p>
-          </CardHeader>
-          <CardBody>
-            <Table
-              tableHeaderColor="primary"
-              tableHead={["Name", "Country", "City", "Flight efficiency"]}
-              tableData={[
-                ["Dakota Rice", "Niger", "Oud-Turnhout", "$36,738"],
-                ["Minerva Hooper", "Curaçao", "Sinaai-Waas", "$23,789"],
-                ["Sage Rodriguez", "Netherlands", "Baileux", "$56,142"],
-                ["Philip Chaney", "Korea, South", "Overland Park", "$38,735"],
-                ["Doris Greene", "Malawi", "Feldkirchen in Kärnten", "$63,542"],
-                ["Mason Porter", "Chile", "Gloucester", "$78,615"]
-              ]}
-            />
-          </CardBody>
-        </Card>
-      </GridItem>
-      <GridItem xs={12} sm={12} md={12}>
-        <Card plain>
-          <CardHeader plain color="primary">
-            <h4 className={classes.cardTitleWhite}>
-              Table on Plain Background
-            </h4>
-            <p className={classes.cardCategoryWhite}>
-              Here is a subtitle for this table
-            </p>
-          </CardHeader>
-          <CardBody>
-            <Table
-              tableHeaderColor="primary"
-              tableHead={["ID", "Name", "Country", "City", "Salary"]}
-              tableData={[
-                ["1", "Dakota Rice", "$36,738", "Niger", "Oud-Turnhout"],
-                ["2", "Minerva Hooper", "$23,789", "Curaçao", "Sinaai-Waas"],
-                ["3", "Sage Rodriguez", "$56,142", "Netherlands", "Baileux"],
-                [
-                  "4",
-                  "Philip Chaney",
-                  "$38,735",
-                  "Korea, South",
-                  "Overland Park"
-                ],
-                [
-                  "5",
-                  "Doris Greene",
-                  "$63,542",
-                  "Malawi",
-                  "Feldkirchen in Kärnten"
-                ],
-                ["6", "Mason Porter", "$78,615", "Chile", "Gloucester"]
-              ]}
-            />
-          </CardBody>
-        </Card>
-      </GridItem>
-    </GridContainer>
+    <div>
+      {destinationInfoState === "FETCHED" ? (
+        <GridContainer>
+          <GridItem xs={12} sm={6} md={6}>
+            <Card>
+              <CardHeader color="info">
+                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
+                <p className={classes.cardCategoryWhite}>
+                  Destinations ranked by travel expense
+                </p>
+              </CardHeader>
+              <CardBody>
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={["Destination City", "Cost in USD"]}
+                  tableData={costTable}
+                />
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={6} md={6}>
+            <Card>
+              <CardHeader color="info">
+                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
+                <p className={classes.cardCategoryWhite}>
+                  Destinations ranked by CO2 emission efficiency
+                </p>
+              </CardHeader>
+              <CardBody>
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={["Destination City", "CO emission"]}
+                  tableData={emissionTable}
+                />
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={12}>
+            <Card plain>
+              <CardHeader plain color="info">
+                <h4 className={classes.cardTitleWhite}>
+                  Additional infomation
+                </h4>
+                <p className={classes.cardCategoryWhite}>
+                  Additional infomation on destinations
+                </p>
+              </CardHeader>
+              <CardBody>
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={[
+                    "Departure",
+                    "Destination",
+                    "Cost in USD",
+                    "Emission"
+                  ]}
+                  tableData={additionalInfoTable}
+                />
+              </CardBody>
+            </Card>
+          </GridItem>
+        </GridContainer>
+      ) : (
+        <GridContainer>
+          <GridItem xs={12} sm={6} md={6}>
+            <Card>
+              <CardHeader color="info">
+                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
+                <p className={classes.cardCategoryWhite}>
+                  Destinations ranked by travel expense
+                </p>
+              </CardHeader>
+              <CardBody>
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={["Destination City", "Cost in USD"]}
+                  tableData={[
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"]
+                  ]}
+                />
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={6} md={6}>
+            <Card>
+              <CardHeader color="info">
+                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
+                <p className={classes.cardCategoryWhite}>
+                  Destinations ranked by CO2 emission efficiency
+                </p>
+              </CardHeader>
+              <CardBody>
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={["Destination City", "CO emission"]}
+                  tableData={[
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"],
+                    ["Amsterdam", "36,738"]
+                  ]}
+                />
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={12}>
+            <Card plain>
+              <CardHeader plain color="info">
+                <h4 className={classes.cardTitleWhite}>
+                  Additional infomation
+                </h4>
+                <p className={classes.cardCategoryWhite}>
+                  Additional infomation on destinations
+                </p>
+              </CardHeader>
+              <CardBody>
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={[
+                    "Departure",
+                    "Destination",
+                    "Cost in USD",
+                    "Emission"
+                  ]}
+                  tableData={[
+                    ["Amsterdam", "Paris", "123.21", "100"],
+                    ["Helsinki", "Paris", "123.21", "100"],
+                    ["Amsterdam", "Berlin", "123.21", "100"],
+                    ["London", "Paris", "123.21", "100"],
+                    ["Stockholm", "Berlin", "123.21", "100"]
+                  ]}
+                />
+              </CardBody>
+            </Card>
+          </GridItem>
+        </GridContainer>
+      )}
+    </div>
   );
 }
 
+// helper functions to filter table data
+function _getCostTable(data) {
+}
 TableList.propTypes = {
-  classes: PropTypes.object
+  classes: PropTypes.object,
+  match: PropTypes.object
 };
 
 export default withStyles(styles)(TableList);
