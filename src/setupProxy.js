@@ -584,8 +584,8 @@ module.exports = app => {
           flight_no: marketing_num.join(""),
           arrive_iso: new Date(arrive_iso),
           depart_iso: new Date(depart_iso),
-          to_code: new Date(to_code),
-          from_code: new Date(from_code)
+          to_code: to_code,
+          from_code: from_code
         })
       )
     );
