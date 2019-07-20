@@ -209,6 +209,7 @@ const WHITELISTED_AIRPORTS = new Set(
   ADL
   BNE
   GDG
+  SXL
 `
     .split("\n")
     .map(a => a.trim())
