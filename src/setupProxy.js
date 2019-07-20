@@ -6,6 +6,9 @@ const fetch = require("node-fetch");
 const pf = require("pareto-frontier");
 const randomstring = require("randomstring");
 
+// eslint-disable-next-line no-unused-vars
+const arrayFlat = require('array-flat-polyfill');
+
 const dateMax = dateFns.max;
 const dateMin = dateFns.min;
 
