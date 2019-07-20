@@ -261,10 +261,11 @@ const queryFlightsForRegistrant = async (conference, interest) => {
   // Its horrible, I know.
   //
   // Stop looking at me.
-  let possibleFlightInformation = [];
 
   let startDate = conference.earliestStartDate;
   dateFns.addDays(conference.latestEndDate, 1);
+
+  let promises = [];
 
   while (
     dateFns.differenceInDays(
@@ -297,25 +298,22 @@ const queryFlightsForRegistrant = async (conference, interest) => {
         let url = `https://apidojo-hipmunk-v1.p.rapidapi.com/flights/create-session?${encodeQuery(
           parameters
         )}`;
-        let routes = await fetch(url, {
-          method: "GET",
-          headers: {
-            "X-RapidAPI-Host": "apidojo-hipmunk-v1.p.rapidapi.com",
-            "X-RapidAPI-Key": process.env.HIPMUNK_API_KEY
-          }
-        }).then(r => r.json());
-
-        if (routes.errors) {
-          break;
-        }
-
-        possibleFlightInformation.push(routes);
-        startDate = dateFns.addDays(startDate, 1);
+        console.log(url);
+        promises.push(
+          fetch(url, {
+            method: "GET",
+            headers: {
+              "X-RapidAPI-Host": "apidojo-hipmunk-v1.p.rapidapi.com",
+              "X-RapidAPI-Key": process.env.HIPMUNK_API_KEY
+            }
+          }).then(r => r.json())
+        );
       }
     }
-
-    return possibleFlightInformation;
+    startDate = dateFns.addDays(startDate, 1);
   }
+
+  return (await Promise.all(promises)).filter(p => !p.errors);
 };
 
 // Based on https://www.carbonindependent.org/22.html
