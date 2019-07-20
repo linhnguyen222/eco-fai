@@ -26,7 +26,17 @@ const createDynamooseInstance = () => {
     secretAccessKey: "SECRET",
     region: "us-east-1"
   });
-  dynamoose.local(process.env.DYNAMO_DB_HOST || "http://localhost:8000"); // This defaults to "http://localhost:8000"
+  if (
+    !(
+      process.env.AWS_ACCESS_KEY_ID &&
+      process.env.AWS_SECRET_ACCESS_KEY &&
+      process.AWS_REGION
+    )
+  ) {
+    dynamoose.local(process.env.DYNAMO_DB_HOST || "http://localhost:8000"); // This defaults to "http://localhost:8000"
+  } else {
+    dynamoose.ddb();
+  }
 };
 
 const createModels = () => {
