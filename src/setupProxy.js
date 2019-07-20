@@ -456,7 +456,7 @@ module.exports = app => {
     });
     await registration.save();
 
-    // Send response now, we'll query flifhts in the background
+    // Send response now, we'll query flights in the background
     res.json({
       status: "ok"
     });
