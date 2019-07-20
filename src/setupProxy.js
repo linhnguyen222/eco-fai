@@ -642,7 +642,7 @@ module.exports = app => {
     res.json({
       status: "ok",
       info: {
-        destinations: conference.destinations,
+        destinations: conference.locationPreferences,
         earliestStartDate: dateMin(registrations.map(r => r.startDate)),
         latestEndDate: dateMax(registrations.map(r => r.endDate)),
         scheduling: registrations.map(r => ({
