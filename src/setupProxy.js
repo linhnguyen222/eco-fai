@@ -505,7 +505,7 @@ module.exports = app => {
         // that are better than any other routing on any metric
         .filter(
           ([, v]) =>
-            v.routing_idens.filter(r => info.routings[r].dominated_by !== null)
+            v.routing_idens.filter(r => info.routings[r].dominated_by === null)
               .length
         )
         .map(async ([k, v]) => {
