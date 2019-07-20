@@ -612,7 +612,7 @@ module.exports = app => {
 
     registration.possibleFlightInformation = feasibleItineraries;
     await registration.save();
-    console.log(`Finished registering participant from ${info.from}`);
+    // console.log(`Finished registering participant from ${info.from}`);
   });
   app.get("/api/conferences", async (req, res) => {
     const { Conference } = await lazyLoadModels();

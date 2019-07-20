@@ -65,29 +65,32 @@ function TableList(props) {
   const [destinationInfoState, setDestinationInfoState] = React.useState(
     "NOT_FETCHED"
   );
-  const [costTable, setCostTable] = React.useState({});
-  const [emissionTable, setEmissionTable] = React.useState({});
-  const [additionalInfoTable, setadditionalInfoTable] = React.useState({});
-  console.log("meow", data);
+  // const [costTable, setCostTable] = React.useState({});
+  const [emissionTable, setEmissionTable] = React.useState([""]);
+  const [additionalInfoTable, setadditionalInfoTable] = React.useState([""]);
+  const [costEmissionTable, setCostEmissionTable] = React.useState([[""]]);
   if (destinationInfoState === "NOT_FETCHED") {
     setDestinationInfoState("WAITING");
-    fetch(`/api/conference-registrants/${slug}`)
+    fetch(`/api/conference-interest/${slug}`)
       .then(res => res.json())
       .then(res => {
         if (res.status === "err") {
           setDestinationInfoState(res.error.code);
         } else {
           setDestinationInfoState("FETCHED");
-          setCostTable({});
-          setEmissionTable({});
-          setadditionalInfoTable({});
+          // setCostTable({});
+          setEmissionTable([""]);
+          setadditionalInfoTable([""]);
         }
+      })
+      .catch(err => {
+        alert("Opps Something went wrong");
+        const dumpCostEmission = _getCostEmissionsTable(data);
+        setCostEmissionTable(dumpCostEmission);
+        throw err;
       });
-    // .catch(err => {
-    //   alert("Opps Something went wrong");
-    //   throw err;
-    // });
   }
+
   return (
     <div>
       {destinationInfoState === "FETCHED" ? (
@@ -103,8 +106,14 @@ function TableList(props) {
               <CardBody>
                 <Table
                   tableHeaderColor="primary"
-                  tableHead={["Destination City", "Cost in USD"]}
-                  tableData={costTable}
+                  tableHead={[
+                    "Destination City",
+                    "Max Cost",
+                    "Max Cost Emissions",
+                    "Min Cost",
+                    "Min Cost Emissions"
+                  ]}
+                  tableData={costEmissionTable}
                 />
               </CardBody>
             </Card>
@@ -153,10 +162,12 @@ function TableList(props) {
         </GridContainer>
       ) : (
         <GridContainer>
-          <GridItem xs={12} sm={6} md={6}>
+          <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
+                <h4 className={classes.cardTitleWhite}>
+                  Cost Emission efficiency
+                </h4>
                 <p className={classes.cardCategoryWhite}>
                   Destinations ranked by travel expense
                 </p>
@@ -164,15 +175,14 @@ function TableList(props) {
               <CardBody>
                 <Table
                   tableHeaderColor="primary"
-                  tableHead={["Destination City", "Cost in USD"]}
-                  tableData={[
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"]
+                  tableHead={[
+                    "Destination City",
+                    "Max Cost",
+                    "Max Cost Emissions",
+                    "Min Cost",
+                    "Min Cost Emissions"
                   ]}
+                  tableData={costEmissionTable}
                 />
               </CardBody>
             </Card>
@@ -238,7 +248,69 @@ function TableList(props) {
 }
 
 // helper functions to filter table data
-function _getCostTable(data) {
+function _getCostEmissionsTable(data) {
+  var destinationsTable = _getUniqDestinationTable(data);
+  var destinationsInfo = destinationsTable.map(dest => {
+    var costEmisObj = {
+      from: dest.from,
+      destinations: dest.destinationFrontier.map(airport => {
+        var obj = {
+          name: airport.destAirport.name,
+          maxCost: airport.tradeoff[0].price * dest.registrants,
+          maxCostEmissions: airport.tradeoff[0].emissions * 4,
+          minCost:
+            airport.tradeoff[airport.tradeoff.length - 1].price *
+            dest.registrants,
+          minCostEmissions:
+            airport.tradeoff[airport.tradeoff.length - 1].emissions *
+            dest.registrants
+        };
+        return obj;
+      })
+    };
+    return costEmisObj;
+  });
+  const costEmisDestinationTable = destinationsInfo
+    .flatMap(dest => dest.destinations)
+    .reduce((a, b) => {
+      var ele = a.find(ele => ele.name === b.name);
+      if (!ele) {
+        a.push(b);
+      } else {
+        ele.maxCost = ele.maxCost + b.maxCost;
+        ele.maxCostEmissions = ele.maxCostEmissions + b.maxCostEmissions;
+        ele.minCost = ele.minCost + ele.minCost;
+        ele.minCostEmissions = ele.minCostEmissions + ele.minCostEmissions;
+      }
+      return a;
+    }, [])
+    .map(function(obj) {
+      return Object.keys(obj).map(function(key) {
+        return obj[key];
+      });
+    });
+  return costEmisDestinationTable;
+}
+function _getUniqDestinationTable(data) {
+  const { destinationOptimality } = data.info;
+  var destinationCount = destinationOptimality.reduce((total, value) => {
+    total[value.from] = (total[value.from] || 0) + 1;
+    return total;
+  }, []);
+  var uniqDestination = destinationOptimality.reduce((a, b) => {
+    if (!a.find(ele => ele.from === b.from)) {
+      a.push(b);
+    }
+    return a;
+  }, []);
+  return uniqDestination.map(value => {
+    var desObj = {
+      from: value.from,
+      registrants: destinationCount[value.from],
+      destinationFrontier: value.destinationFrontier
+    };
+    return desObj;
+  });
 }
 TableList.propTypes = {
   classes: PropTypes.object,
