@@ -119,7 +119,8 @@ function CreateConferencePage(props) {
           days,
           description,
           earliestStartDate: startDate,
-          latestEndDate: endDate
+          latestEndDate: endDate,
+          locationPreferences: destinations
         }
       })
     })
