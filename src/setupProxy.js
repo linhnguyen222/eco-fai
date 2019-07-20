@@ -326,6 +326,9 @@ const computeParetoOptimalCostEmissionsTradeoff = emissionsPriceTable =>
     optimize: "bottomLeft"
   });
 
+const fromEntries = arr =>
+  Object.assign({}, ...Array.from(arr, ([k, v]) => ({ [k]: v })));
+
 module.exports = app => {
   const lazyLoadModels = lazyLoadModelsClosure();
 
@@ -339,14 +342,19 @@ module.exports = app => {
       TravelLeg
     } = await lazyLoadModels();
 
-    const itineraries = (await Promise.all(
-      possibleFlightInformation.map(async itinId =>
-        TravelItinerary.queryOne("id")
-          .eq(itinId)
-          .exec()
-      )
-    )).filter(i => !!i);
-    const routingPrices = await Promise.all(
+    const itineraries = (await TravelItinerary.scan({
+      FilterExpression: "contains(:ids, id)",
+      ExpressionAttributeValues: {
+        ":ids": possibleFlightInformation
+      }
+    }).exec())
+      .filter(i => !!i)
+      // Work around an odd bug in Dynamoose
+      .map(({ routing_ids, ...rest }) => ({
+        routing_ids: JSON.parse(routing_ids),
+        ...rest
+      }));
+    const routingIdsAndPrices = fromEntries(
       itineraries
         .map(itin =>
           itin.routing_ids.map(routingId => ({
@@ -356,27 +364,40 @@ module.exports = app => {
           }))
         )
         .flat()
-        .map(async ({ routingId, price, agony }) => ({
-          routing: await TravelRouting.queryOne("id")
-            .eq(routingId)
-            .exec(),
-          price,
-          agony
-        }))
+        .map(({ routingId, price, agony }) => [routingId, { price, agony }])
     );
+    const routings = (await TravelRouting.scan({
+      FilterExpression: "contains(:ids, id)",
+      ExpressionAttributeValues: {
+        ":ids": Object.keys(routingIdsAndPrices)
+      }
+    }).exec())
+      // Work around an odd bug in Dynamoose
+      .map(({ legs, ...rest }) => ({
+        legs: JSON.parse(legs),
+        ...rest
+      }));
+    const routingPrices = routings.map(routing => ({
+      ...routingIdsAndPrices[routing.id],
+      routing: routing
+    }));
     const filteredRoutingPrices = routingPrices.filter(i => !!i.routing);
-    const legsPrice = await Promise.all(
-      filteredRoutingPrices.map(async ({ routing, price, agony }) => ({
-        legs: (await Promise.all(
-          routing.legs.map(legId =>
-            TravelLeg.queryOne("id")
-              .eq(legId)
-              .exec()
-          )
-        )).filter(i => !!i),
+    const legs = fromEntries(
+      (await TravelLeg.scan({
+        FilterExpression: "contains(:ids, id)",
+        ExpressionAttributeValues: {
+          ":ids": filteredRoutingPrices
+            .map(({ routing }) => routing.legs)
+            .flat()
+        }
+      }).exec()).map(leg => [leg.id, leg])
+    );
+    const legsPrice = filteredRoutingPrices.map(
+      ({ routing, price, agony }) => ({
+        legs: routing.legs.map(legId => legs[legId]).filter(i => !!i),
         price,
         agony
-      }))
+      })
     );
     const filteredLegsPrice = legsPrice.filter(
       ({ legs }) => legs[legs.length - 1].to_code === airport.code
