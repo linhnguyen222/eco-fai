@@ -257,7 +257,7 @@ function _getCostEmissionsTable(data) {
         var obj = {
           name: airport.destAirport.name,
           maxCost: airport.tradeoff[0].price * dest.registrants,
-          maxCostEmissions: airport.tradeoff[0].emissions * 4,
+          maxCostEmissions: airport.tradeoff[0].emissions * dest.registrants,
           minCost:
             airport.tradeoff[airport.tradeoff.length - 1].price *
             dest.registrants,
