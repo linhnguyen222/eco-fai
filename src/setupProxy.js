@@ -22,15 +22,15 @@ const startUpAndReturnDynamo = async () => {
 
 const createDynamooseInstance = () => {
   dynamoose.AWS.config.update({
-    accessKeyId: "AKID",
-    secretAccessKey: "SECRET",
-    region: "us-east-1"
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION
   });
   if (
     !(
       process.env.AWS_ACCESS_KEY_ID &&
       process.env.AWS_SECRET_ACCESS_KEY &&
-      process.AWS_REGION
+      process.env.AWS_REGION
     )
   ) {
     dynamoose.local(process.env.DYNAMO_DB_HOST || "http://localhost:8000"); // This defaults to "http://localhost:8000"
