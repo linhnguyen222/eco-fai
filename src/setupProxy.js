@@ -3,6 +3,7 @@ const dynalite = require("dynalite");
 const express = require("express");
 const dateFns = require("date-fns");
 const fetch = require("node-fetch");
+const randomstring = require("randomstring");
 
 const dateMax = dateFns.max;
 const dateMin = dateFns.min;
@@ -35,6 +36,7 @@ const createModels = () => {
     airports: Array
   });
   const InterestRegistration = dynamoose.model("InterestRegistration", {
+    id: String,
     conferenceSlug: String,
     from: String,
     startDate: Date,
@@ -364,6 +366,7 @@ module.exports = app => {
     const airports = await findNearbyAirports([info.from]);
 
     const registration = new InterestRegistration({
+      id: randomstring.generate(),
       conferenceSlug: info.slug,
       startDate: info.startDate,
       endDate: info.endDate,
