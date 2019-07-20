@@ -32,7 +32,7 @@ import CardAvatar from "components/Card/CardAvatar.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
 
-import avatar from "assets/img/faces/marc.jpg";
+import avatar from "assets/img/copenhagen.png";
 
 const styles = {
   cardCategoryWhite: {

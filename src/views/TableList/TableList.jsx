@@ -73,7 +73,7 @@ function TableList(props) {
           <CardBody>
             <Table
               tableHeaderColor="primary"
-              tableHead={["Name", "Country", "City", "Salary"]}
+              tableHead={["Name", "Country", "City", "Flight efficiency"]}
               tableData={[
                 ["Dakota Rice", "Niger", "Oud-Turnhout", "$36,738"],
                 ["Minerva Hooper", "Curaçao", "Sinaai-Waas", "$23,789"],
