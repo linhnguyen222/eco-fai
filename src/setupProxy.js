@@ -205,6 +205,10 @@ const WHITELISTED_AIRPORTS = new Set(
   LIS
   ATH
   AKL
+  PER
+  ADL
+  BNE
+  GDG
 `
     .split("\n")
     .map(a => a.trim())
