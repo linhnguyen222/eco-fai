@@ -614,9 +614,11 @@ module.exports = app => {
     }
 
     const conference = conferences[0];
-    const registrations = await InterestRegistration.query("conferenceSlug")
-      .eq(conference.slug)
-      .exec();
+    const registrations = await InterestRegistration.scan({
+      conferenceSlug: {
+        eq: req.params.slug
+      }
+    }).exec();
 
     res.json({
       status: "ok",
