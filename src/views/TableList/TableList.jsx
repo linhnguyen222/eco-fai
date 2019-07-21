@@ -194,7 +194,9 @@ function TableList(props) {
                     <div className={classes.bestChoice}>
                       <h4>Best Choice: {costEmissionWeightedTable[0][0]}</h4>
                       <GridContainer>
-                        <GridItem sm={3}><p>Emissions</p></GridItem>
+                        <GridItem sm={3}>
+                          <p>Emissions</p>
+                        </GridItem>
                         <GridItem sm={6}>
                           <Slider
                             min={1}
@@ -203,7 +205,9 @@ function TableList(props) {
                             onChange={handleRangeChange}
                           />
                         </GridItem>
-                        <GridItem sm={3}><p>Cost</p></GridItem>
+                        <GridItem sm={3}>
+                          <p>Cost</p>
+                        </GridItem>
                       </GridContainer>
                     </div>
                   </GridItem>
@@ -277,7 +281,9 @@ function TableList(props) {
                 <div className={classes.bestChoice}>
                   <h4>Best Choice: {costEmissionWeightedTable[0][0]}</h4>
                   <GridContainer>
-                    <GridItem sm={3}><p>Emissions</p></GridItem>
+                    <GridItem sm={3}>
+                      <p>Emissions</p>
+                    </GridItem>
                     <GridItem sm={6}>
                       <Slider
                         min={1}
@@ -286,7 +292,9 @@ function TableList(props) {
                         onChange={handleRangeChange}
                       />
                     </GridItem>
-                    <GridItem sm={3}><p>Cost</p></GridItem>
+                    <GridItem sm={3}>
+                      <p>Cost</p>
+                    </GridItem>
                   </GridContainer>
                 </div>
                 {destinationInfoState === "FETCHED" ? (
