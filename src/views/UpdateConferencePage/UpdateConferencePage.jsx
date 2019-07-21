@@ -62,8 +62,9 @@ const allSet = args => {
   return args.reduce((value, a) => value && a);
 };
 
-function CreateConferencePage(props) {
-  const { classes } = props;
+function UpdateConferencePage(props) {
+  const { classes, match } = props;
+  const slug = match.params.slug;
 
   const [startDate, setStartDate] = React.useState(new Date());
   const [days, setDays] = React.useState(5);
@@ -72,8 +73,9 @@ function CreateConferencePage(props) {
   const [description, setDescription] = React.useState("");
   const [organizer, setOrganizer] = React.useState("");
   const [destinations, setDestinations] = React.useState([]);
-  const [register, setRegisterSuccess] = React.useState(false);
+  const [update, setUpdateSuccess] = React.useState(false);
   const [conferenceInfo, setConferenceInfo] = React.useState("");
+  const [fetchState, setFetchState] = React.useState("FETCHING");
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -106,8 +108,8 @@ function CreateConferencePage(props) {
   }
 
   function handleCreateNewConferenceSubmission() {
-    fetch("/api/register-conference", {
-      url: "/api/register-conference",
+    fetch(`/api/update-conference/${slug}`, {
+      url: `/api/update-conference/${slug}`,
       method: "POST",
       headers: {
         "Content-type": "application/json"
@@ -126,7 +128,7 @@ function CreateConferencePage(props) {
     })
       .then(r => r.json())
       .then(response => {
-        setRegisterSuccess(true);
+        setUpdateSuccess(true);
         setConferenceInfo(response.info);
       })
       .catch(error => {
@@ -135,11 +137,31 @@ function CreateConferencePage(props) {
       });
   }
 
+  if (fetchState === "FETCHING") {
+    setFetchState("WAITING");
+    fetch(`/api/conference-proposal/${slug}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === "err") {
+          setFetchState(res.error.code);
+        } else {
+          setFetchState("FETCHED");
+          setName(res.info.conference.name);
+          setDescription(res.info.conference.description);
+          setOrganizer(res.info.conference.organizer);
+          setStartDate(res.info.conference.earliestStartDate);
+          setEndDate(res.info.conference.latestEndDate);
+          setDays(res.info.conference.days);
+          setDestinations(res.info.conference.locationPreferences);
+        }
+      });
+  }
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <GridContainer>
         <GridItem xs={12} sm={12} md={12}>
-          {register ? (
+          {update ? (
             <Card>
               <CardHeader color="success">
                 <h4 className={classes.cardTitleWhite}>
@@ -149,17 +171,13 @@ function CreateConferencePage(props) {
               <CardBody>
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={5}>
-                    Your conference code is {conferenceInfo.slug}
+                    Conference updated! As usual, the conference codeis:{" "}
+                    {conferenceInfo.slug}
                     <p>
                       The registration link for your event is
                       <br></br>
                       {window.location.origin +
                         "/admin/register/" +
-                        conferenceInfo.slug}
-                      <br />
-                      To update your event, use the following link: <br />
-                      {window.location.origin +
-                        "/admin/update/" +
                         conferenceInfo.slug}
                     </p>
                   </GridItem>
@@ -170,7 +188,7 @@ function CreateConferencePage(props) {
             <Card>
               <CardHeader color="primary">
                 <h4 className={classes.cardTitleWhite}>
-                  Tell us more about your amazing conference
+                  Update your amazing conference
                 </h4>
               </CardHeader>
               <CardBody>
@@ -290,7 +308,7 @@ function CreateConferencePage(props) {
                   }
                   onClick={handleCreateNewConferenceSubmission}
                 >
-                  Create New Conference
+                  Update Conference
                 </Button>
               </CardFooter>
             </Card>
@@ -301,8 +319,9 @@ function CreateConferencePage(props) {
   );
 }
 
-CreateConferencePage.propTypes = {
+UpdateConferencePage.propTypes = {
+  match: PropTypes.object,
   classes: PropTypes.object
 };
 
-export default withStyles(styles)(CreateConferencePage);
+export default withStyles(styles)(UpdateConferencePage);
