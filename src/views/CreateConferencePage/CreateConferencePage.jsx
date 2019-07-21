@@ -155,7 +155,7 @@ function CreateConferencePage(props) {
               </CardHeader>
               <CardBody>
                 <GridContainer>
-                  <GridItem xs={12} sm={12} md={5}>
+                  <GridItem xs={12} sm={12} md={12}>
                     Your conference code is {conferenceInfo.slug}
                     <p>
                       The registration link for your event is
@@ -249,7 +249,7 @@ function CreateConferencePage(props) {
                   </GridItem>
                 </GridContainer>
                 <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
+                  <GridItem xs={12} sm={12} md={8}>
                     <CustomInput
                       labelText="Comma Separated Destinations in Priority Order"
                       id="destinations"
