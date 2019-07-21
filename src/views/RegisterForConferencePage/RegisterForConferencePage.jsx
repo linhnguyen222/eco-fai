@@ -40,6 +40,7 @@ import CardAvatar from "components/Card/CardAvatar.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
+import EnterConferenceSlug from "components/EnterConferenceSlug/EnterConferenceSlug.jsx";
 
 import avatar from "assets/img/copenhagen.png";
 // import avatar from "assets/img/faces/marc.jpg";
@@ -152,19 +153,7 @@ function RegisterForConference(props) {
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       {slug === ":slug" ? (
-        <GridContainer>
-          <Card>
-            <CardHeader color="warning">
-              <h3 className={classes.cardTitleWhite}>
-                No Conference slug in the url
-              </h3>
-            </CardHeader>
-            <h4 style={{ padding: "30px" }}>
-              You need to put in your conference slug in order to register to a
-              conference, replace `:slug` in the url with your conference slug
-            </h4>
-          </Card>
-        </GridContainer>
+        <EnterConferenceSlug classes={classes} />
       ) : (
         <GridContainer>
           <GridItem xs={12} sm={12} md={conferenceInfoLoaded ? 8 : 12}>
