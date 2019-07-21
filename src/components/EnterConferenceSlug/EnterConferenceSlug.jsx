@@ -6,7 +6,14 @@ import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CustomInput from "components/CustomInput/CustomInput.jsx";
 import GridItem from "components/Grid/GridItem.jsx";
+import withStyles from "@material-ui/core/styles/withStyles";
 import GridContainer from "components/Grid/GridContainer.jsx";
+
+const styles = {
+  conferenceCodeInput: {
+    margin: "4px 0 0 0"
+  }
+};
 
 const EnterConferenceSlug = ({ classes, navigateToConferenceSlug }) => {
   let [code, setCode] = React.useState("");
@@ -42,6 +49,7 @@ const EnterConferenceSlug = ({ classes, navigateToConferenceSlug }) => {
           <GridContainer>
             <GridItem xs={12} sm={12} md={8}>
               <CustomInput
+                className={classes.conferenceCodeInput}
                 labelText={codeError || "Conference Code"}
                 id="name"
                 formControlProps={{
@@ -56,6 +64,7 @@ const EnterConferenceSlug = ({ classes, navigateToConferenceSlug }) => {
             </GridItem>
             <GridItem xs={12} sm={12} md={4}>
               <Button
+                style={{ marginTop: "30px" }}
                 color="primary"
                 disabled={!code}
                 onClick={handleCheckConference}
@@ -75,4 +84,4 @@ EnterConferenceSlug.propTypes = {
   navigateToConferenceSlug: PropTypes.func.isRequired
 };
 
-export default EnterConferenceSlug;
+export default withStyles(styles)(EnterConferenceSlug);
