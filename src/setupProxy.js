@@ -1,3 +1,4 @@
+/* eslint-disable */
 const dynamoose = require("dynamoose");
 const dynalite = require("dynalite");
 const express = require("express");

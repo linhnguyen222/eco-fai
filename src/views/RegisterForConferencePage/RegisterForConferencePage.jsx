@@ -40,9 +40,13 @@ import CardAvatar from "components/Card/CardAvatar.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
+<<<<<<< HEAD
 import EnterConferenceSlug from "components/EnterConferenceSlug/EnterConferenceSlug.jsx";
 
 import avatar from "assets/img/copenhagen.png";
+=======
+import avatar from "assets/img/cities/Copenhagen.png";
+>>>>>>> dyniamic images for cost and emission trade off table
 // import avatar from "assets/img/faces/marc.jpg";
 const styles = {
   cardCategoryWhite: {

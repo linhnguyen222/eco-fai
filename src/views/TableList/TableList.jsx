@@ -13,7 +13,6 @@
 =========================================================
 
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
 */
 import React from "react";
 // nodejs library to set properties for components
@@ -29,7 +28,13 @@ import Table from "components/Table/Table.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
+<<<<<<< HEAD
 import EnterConferenceSlug from "components/EnterConferenceSlug/EnterConferenceSlug.jsx";
+=======
+import CardAvatar from "components/Card/CardAvatar.jsx";
+import data from "./dump.jsx";
+import avatar from "assets/img/cities/Copenhagen.png";
+>>>>>>> dyniamic images for cost and emission trade off table
 
 const styles = {
   cardCategoryWhite: {
@@ -58,6 +63,19 @@ const styles = {
       fontWeight: "400",
       lineHeight: "1"
     }
+  },
+  avatarStyle: {
+    marginTop: "7px"
+  },
+  bestChoice: {
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    padding: "20px"
+  },
+  ceSlider: {
+    marginTop: "10px"
   }
 };
 
@@ -87,7 +105,26 @@ function TableList(props) {
     fetch(`/api/conference-interest/${slug}`)
       .then(res => res.json())
       .then(res => {
+<<<<<<< HEAD
         if (res.status !== "err") {
+=======
+        if (res.status === "err") {
+          // alert(
+          //   "Opps! Something went wrong, can you check your conference slug in the url"
+          // );
+          setDestinationInfoState(res.error.code);
+          // show the dummy table
+          const dumpCostEmission = _formatTableData(
+            _getCostEmissionsTable(tableData)
+          );
+          setCostEmissionTable(dumpCostEmission);
+          // show dummny weighted table
+          const dumpWeighted = _formatTableData(
+            _getCostEmissionByRange(tableData, ceRange)
+          );
+          setCostEmissionWeightedTable(dumpWeighted);
+        } else {
+>>>>>>> dyniamic images for cost and emission trade off table
           setDestinationInfoState("FETCHED");
           // set table Data
           setTableData(res);
@@ -101,8 +138,19 @@ function TableList(props) {
           setCostEmissionWeightedTable(weighted);
         }
       })
+<<<<<<< HEAD
       .catch(e => console.error(e));
   }
+=======
+      .catch(err => {
+        // alert(
+        //   "Opps! Something went wrong, can you check your conference slug in the url"
+        // );
+        const dumpCostEmission = _formatTableData(
+          _getCostEmissionsTable(tableData)
+        );
+        setCostEmissionTable(dumpCostEmission);
+>>>>>>> dyniamic images for cost and emission trade off table
 
   function navigateToSlug(slug) {
     history.push(`/admin/destinations/${slug}`);
@@ -120,6 +168,9 @@ function TableList(props) {
     );
     setCostEmissionWeightedTable(weighted);
   }
+  function addDefaultImgSrc(event) {
+    event.target.src = avatar;
+  }
   return (
     <div>
       {slug === ":slug" ? (
@@ -129,7 +180,7 @@ function TableList(props) {
         />
       ) : destinationInfoState === "FETCHED" ? (
         <GridContainer>
-          <GridItem xs={12} sm={12} md={6}>
+          <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>
@@ -140,6 +191,7 @@ function TableList(props) {
                 </p>
               </CardHeader>
               <CardBody>
+<<<<<<< HEAD
                 <p>Set your priority</p>
                 Emissions
                 <input
@@ -160,6 +212,51 @@ function TableList(props) {
                 ) : (
                   <CircularProgress className={progress} />
                 )}
+=======
+                <GridContainer>
+                  {/* sidebar info */}
+                  <GridItem xs={12} sm={12} md={6}>
+                    <CardAvatar profile className={classes.avatarStyle}>
+                      <a href="#cophenhagen" onClick={e => e.preventDefault()}>
+                        {/* <img id="destination-img" src={"https://thumbor.forbes.com/thumbor/711x490/https://specials-images.forbesimg.com/dam/imageserve/1128749011/960x0.jpg?fit=scale"} alt="..." /> */}
+                        <img
+                          onError={addDefaultImgSrc}
+                          className="img-responsive"
+                          src={
+                            "https://ecofai-images.s3.eu-north-1.amazonaws.com/" +
+                            costEmissionWeightedTable[0][0] +
+                            "-min.png"
+                          }
+                        />
+                      </a>
+                    </CardAvatar>
+                    <div className={classes.bestChoice}>
+                      <p> Best Choice: {costEmissionWeightedTable[0][0]}</p>
+                      <div className={classes.ceSlider}>
+                        Emissions
+                        <input
+                          type="range"
+                          name="emissionRange"
+                          min="1"
+                          max="10"
+                          value={ceRange}
+                          onChange={handleRangeChange}
+                        ></input>
+                        Cost
+                      </div>
+                    </div>
+                  </GridItem>
+                  {/* end of sidebar info */}
+                  {/* The table */}
+                  <GridItem xs={12} sm={12} md={5}>
+                    <Table
+                      tableHeaderColor="primary"
+                      tableHead={["Host City", "Emissions", "Cost"]}
+                      tableData={costEmissionWeightedTable}
+                    />
+                  </GridItem>
+                </GridContainer>
+>>>>>>> dyniamic images for cost and emission trade off table
               </CardBody>
             </Card>
           </GridItem>
@@ -196,7 +293,8 @@ function TableList(props) {
       ) : (
         // default offline page
         <GridContainer>
-          <GridItem xs={12} sm={12} md={6}>
+          {/* first table */}
+          <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>
@@ -208,6 +306,7 @@ function TableList(props) {
               </CardHeader>
               <CardBody>
                 <p>Set our priorities</p>
+<<<<<<< HEAD
                 Emissions
                 <input
                   type="range"
@@ -227,9 +326,29 @@ function TableList(props) {
                 ) : (
                   <CircularProgress className={progress} />
                 )}
+=======
+                <div>
+                  Emissions
+                  <input
+                    type="range"
+                    name="emissionRange"
+                    min="1"
+                    max="10"
+                    value={ceRange}
+                    onChange={handleRangeChange}
+                  ></input>
+                  Cost
+                </div>
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={["Destination City", "Emissions", "Cost"]}
+                  tableData={costEmissionWeightedTable}
+                />
+>>>>>>> dyniamic images for cost and emission trade off table
               </CardBody>
             </Card>
           </GridItem>
+          {/* second table */}
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
