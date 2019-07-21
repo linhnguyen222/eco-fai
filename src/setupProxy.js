@@ -342,7 +342,17 @@ const queryFlightsForRegistrant = async (conference, interest) => {
               "X-RapidAPI-Host": "apidojo-hipmunk-v1.p.rapidapi.com",
               "X-RapidAPI-Key": process.env.HIPMUNK_API_KEY
             }
-          }).then(r => r.json())
+          }).then(r =>
+            r.text().then(text => {
+              try {
+                return JSON.parse(text);
+              } catch (e) {
+                console.error(e);
+                console.log(text);
+                return {};
+              }
+            })
+          )
         );
       }
     }
