@@ -1,4 +1,3 @@
-/* eslint-disable */
 const dynamoose = require("dynamoose");
 const dynalite = require("dynalite");
 const express = require("express");
@@ -504,13 +503,16 @@ module.exports = app => {
 
   app.use(express.json());
   app.get("/api/quote", async (req, res) => {
-    const response = await fetch("https://yusufnb-quotes-v1.p.rapidapi.com/widget/~environment.json", {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Host": "yusufnb-quotes-v1.p.rapidapi.com",
-        "X-RapidAPI-Key": "8224ef5cb2msh077533f86811bbdp10c86cjsna516eb53f619"
+    const response = await fetch(
+      "https://yusufnb-quotes-v1.p.rapidapi.com/widget/~environment.json",
+      {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Host": "yusufnb-quotes-v1.p.rapidapi.com",
+          "X-RapidAPI-Key": "8224ef5cb2msh077533f86811bbdp10c86cjsna516eb53f619"
+        }
       }
-    }).then(r => r.json());
+    ).then(r => r.json());
 
     res.json({
       status: "ok",
@@ -519,7 +521,7 @@ module.exports = app => {
         by: response.by
       }
     });
-  })
+  });
   app.post("/api/register-conference", async (req, res) => {
     const { info } = req.body;
     const { Conference } = await lazyLoadModels();
