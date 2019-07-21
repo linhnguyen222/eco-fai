@@ -548,7 +548,9 @@ module.exports = app => {
         organizer: info.organizer || conference.organizer,
         locationPreferences:
           info.locationPreferences || conference.locationPreferences,
-        airports: await findNearbyAirports(info.locationPreferences || conference.locationPreferences)
+        airports: await findNearbyAirports(
+          info.locationPreferences || conference.locationPreferences
+        )
       }
     );
     res.json({
