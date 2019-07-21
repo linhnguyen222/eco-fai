@@ -70,14 +70,18 @@ function TableList(props) {
     costEmissionWeightedTable,
     setCostEmissionWeightedTable
   ] = React.useState([[""]]);
-
+  const [ceRange, setCeRange] = React.useState(0);
   const [tableData, setTableData] = React.useState(data);
+
   if (destinationInfoState === "NOT_FETCHED") {
     setDestinationInfoState("WAITING");
     fetch(`/api/conference-interest/${slug}`)
       .then(res => res.json())
       .then(res => {
         if (res.status === "err") {
+          alert(
+            "Opps! Something went wrong, can you check your conference slug in the url"
+          );
           setDestinationInfoState(res.error.code);
           // show the dummy table
           const dumpCostEmission = _formatTableData(
@@ -86,7 +90,7 @@ function TableList(props) {
           setCostEmissionTable(dumpCostEmission);
           // show dummny weighted table
           const dumpWeighted = _formatTableData(
-            _getCostEmissionByRange(tableData, 1)
+            _getCostEmissionByRange(tableData, ceRange)
           );
           setCostEmissionWeightedTable(dumpWeighted);
         } else {
@@ -94,19 +98,19 @@ function TableList(props) {
           // set table Data
           setTableData(res);
           // costEmissionTable
-          const costEmission = _formatTableData(
-            _getCostEmissionsTable(tableData)
-          );
+          const costEmission = _formatTableData(_getCostEmissionsTable(res));
           setCostEmissionTable(costEmission);
           // weighted cost emission table
           const weighted = _formatTableData(
-            _getCostEmissionByRange(tableData, 1)
+            _getCostEmissionByRange(res, ceRange)
           );
           setCostEmissionWeightedTable(weighted);
         }
       })
       .catch(err => {
-        alert("Opps Something went wrong");
+        alert(
+          "Opps! Something went wrong, can you check your conference slug in the url"
+        );
         const dumpCostEmission = _formatTableData(
           _getCostEmissionsTable(tableData)
         );
@@ -114,7 +118,7 @@ function TableList(props) {
 
         // show dummny weighted table
         const dumpWeighted = _formatTableData(
-          _getCostEmissionByRange(tableData, 1)
+          _getCostEmissionByRange(tableData, ceRange)
         );
         setCostEmissionWeightedTable(dumpWeighted);
         throw err;
@@ -122,6 +126,7 @@ function TableList(props) {
   }
   function handleRangeChange(event) {
     const range = Number(event.target.value);
+    setCeRange(range);
     const weighted = _formatTableData(
       _getCostEmissionByRange(tableData, range)
     );
@@ -131,10 +136,42 @@ function TableList(props) {
     <div>
       {destinationInfoState === "FETCHED" ? (
         <GridContainer>
-          <GridItem xs={12} sm={6} md={6}>
+          <GridItem xs={12} sm={12} md={6}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
+                <h4 className={classes.cardTitleWhite}>
+                  Cost and Emissions trade off
+                </h4>
+                <p className={classes.cardCategoryWhite}>
+                  Destinations ranked by travel expense
+                </p>
+              </CardHeader>
+              <CardBody>
+                <p>Set your priority</p>
+                Emissions
+                <input
+                  type="range"
+                  name="emissionRange"
+                  min="1"
+                  max="10"
+                  value={ceRange}
+                  onChange={handleRangeChange}
+                ></input>
+                Cost
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={["Destination City", "Emissions", "Cost"]}
+                  tableData={costEmissionWeightedTable}
+                />
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={12}>
+            <Card>
+              <CardHeader color="info">
+                <h4 className={classes.cardTitleWhite}>
+                  Cost Emission efficiency
+                </h4>
                 <p className={classes.cardCategoryWhite}>
                   Destinations ranked by travel expense
                 </p>
@@ -154,68 +191,29 @@ function TableList(props) {
               </CardBody>
             </Card>
           </GridItem>
-          <GridItem xs={12} sm={6} md={6}>
-            <Card>
-              <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
-                <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by CO2 emission efficiency
-                </p>
-              </CardHeader>
-              {/* <CardBody>
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={["Destination City", "CO emission"]}
-                  tableData={emissionTable}
-                />
-              </CardBody> */}
-            </Card>
-          </GridItem>
-          <GridItem xs={12} sm={12} md={12}>
-            <Card plain>
-              <CardHeader plain color="info">
-                <h4 className={classes.cardTitleWhite}>
-                  Additional infomation
-                </h4>
-                <p className={classes.cardCategoryWhite}>
-                  Additional infomation on destinations
-                </p>
-              </CardHeader>
-              {/* <CardBody>
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={[
-                    "Departure",
-                    "Destination",
-                    "Cost in USD",
-                    "Emission"
-                  ]}
-                  tableData={additionalInfoTable}
-                />
-              </CardBody> */}
-            </Card>
-          </GridItem>
         </GridContainer>
       ) : (
         // default offline page
         <GridContainer>
-          <GridItem xs={12} sm={12} md={12}>
+          <GridItem xs={12} sm={12} md={6}>
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>
-                  Test input bar akdfalskfdnalskd
+                  Cost and Emissions trade off
                 </h4>
                 <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by travel expense
+                  Destinations ranked by travel expense (This is a dummy table)
                 </p>
               </CardHeader>
               <CardBody>
+                <p>Set our priorities</p>
                 Emissions
                 <input
                   type="range"
                   name="emissionRange"
                   min="1"
                   max="10"
+                  value={ceRange}
                   onChange={handleRangeChange}
                 ></input>
                 Cost
@@ -226,13 +224,15 @@ function TableList(props) {
                 />
               </CardBody>
             </Card>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>
                   Cost Emission efficiency
                 </h4>
                 <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by travel expense
+                  Destinations ranked by travel expense (This is a dummy table)
                 </p>
               </CardHeader>
               <CardBody>
@@ -286,8 +286,8 @@ function _getCostEmissionsTable(data) {
   return costEmisDestinationTable;
 }
 function _getCostEmissionByRange(data, range) {
-  let costEmissionTable = _getCostEmissionsTable(data);
-  costEmissionTable = costEmissionTable.map(value => {
+  const costEmissionTable = _getCostEmissionsTable(data);
+  const ceDiffTable = costEmissionTable.map(value => {
     let obj = {
       destination: value.destination,
       eMin: value.maxCostEmissions,
@@ -297,7 +297,7 @@ function _getCostEmissionByRange(data, range) {
     };
     return obj;
   });
-  let costEmissionWeightedTable = costEmissionTable.map(value => {
+  let costEmissionWeightedTable = ceDiffTable.map(value => {
     let obj = {
       destination: value.destination,
       wEmissions: value.eMin + (value.eDiff * range) / 10,

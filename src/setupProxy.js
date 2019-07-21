@@ -605,15 +605,16 @@ module.exports = app => {
       status: "ok"
     });
 
-    const possibleFlightInformation = await queryFlightsForRegistrant(
-      conference,
-      registration
-    );
+    const possibleFlightInformation =
+      (await queryFlightsForRegistrant(conference, registration)) || [];
 
     const airportInfoPromises = splitBatches(
       deduplicateKVs(
         possibleFlightInformation
-          .map(info => Object.entries(info.airports || {}))
+          .filter(info => info && info.airports)
+          .map(info => {
+            return Object.entries(info.airports || {});
+          })
           .flat()
       ).map(([code, { city, name }]) => ({
         code,
@@ -741,7 +742,7 @@ module.exports = app => {
         eq: req.params.slug
       }
     }).exec();
-
+    // console.log("got registrations", registrations);
     res.json({
       status: "ok",
       info: {
@@ -763,7 +764,13 @@ module.exports = app => {
                   (await computeFlightTimesAndCostsTableFromItineraries(
                     r.possibleFlightInformation,
                     destination
-                  )).map(({ emissions, price }) => [emissions, price])
+                  ))
+                    .filter(value => {
+                      // console.log("filtering", value);
+                      return value;
+                      // return emissions && price;
+                    })
+                    .map(({ emissions, price }) => [emissions, price])
                 ).map(([emissions, price]) => ({ emissions, price }))
               }))
             )

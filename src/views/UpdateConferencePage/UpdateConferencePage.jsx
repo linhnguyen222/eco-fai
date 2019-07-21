@@ -159,162 +159,178 @@ function UpdateConferencePage(props) {
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <GridContainer>
-        <GridItem xs={12} sm={12} md={12}>
-          {update ? (
-            <Card>
-              <CardHeader color="success">
-                <h4 className={classes.cardTitleWhite}>
-                  Your conference was successfully registered
-                </h4>
-              </CardHeader>
-              <CardBody>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={5}>
-                    Conference updated! As usual, the conference codeis:{" "}
-                    {conferenceInfo.slug}
-                    <p>
-                      The registration link for your event is
-                      <br></br>
-                      {window.location.origin +
-                        "/admin/register/" +
-                        conferenceInfo.slug}
-                    </p>
-                  </GridItem>
-                </GridContainer>
-              </CardBody>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>
-                  Update your amazing conference
-                </h4>
-              </CardHeader>
-              <CardBody>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={5}>
-                    <CustomInput
-                      labelText="Conference Name"
-                      id="name"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        value: name,
-                        onChange: handleNameChange
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={7}>
-                    <CustomInput
-                      labelText="Organizer"
-                      id="organizer"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        value: organizer,
-                        onChange: handleOrganizerChange
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={5}>
-                    <FormControl fullWidth>
-                      <KeyboardDatePicker
-                        id="start-date-picker"
-                        label="Earliest Possible Start Date"
-                        value={startDate}
-                        onChange={handleStartDateChange}
-                        KeyboardButtonProps={{
-                          "aria-label": "change earliest start date"
+      {slug === ":slug" ? (
+        <GridContainer>
+          <Card>
+            <CardHeader color="warning">
+              <h3 className={classes.cardTitleWhite}>
+                No Conference slug in the url
+              </h3>
+            </CardHeader>
+            <h4 style={{ padding: "30px" }}>
+              You need to put in your conference slug in order to update to the
+              conference, replace `:slug` in the url with your conference slug
+            </h4>
+          </Card>
+        </GridContainer>
+      ) : (
+        <GridContainer>
+          <GridItem xs={12} sm={12} md={12}>
+            {update ? (
+              <Card>
+                <CardHeader color="success">
+                  <h4 className={classes.cardTitleWhite}>
+                    Your conference was successfully registered
+                  </h4>
+                </CardHeader>
+                <CardBody>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={5}>
+                      Conference updated! As usual, the conference codeis:{" "}
+                      {conferenceInfo.slug}
+                      <p>
+                        The registration link for your event is
+                        <br></br>
+                        {window.location.origin +
+                          "/admin/register/" +
+                          conferenceInfo.slug}
+                      </p>
+                    </GridItem>
+                  </GridContainer>
+                </CardBody>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader color="primary">
+                  <h4 className={classes.cardTitleWhite}>
+                    Update your amazing conference
+                  </h4>
+                </CardHeader>
+                <CardBody>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={5}>
+                      <CustomInput
+                        labelText="Conference Name"
+                        id="name"
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          value: name,
+                          onChange: handleNameChange
                         }}
                       />
-                    </FormControl>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={5}>
-                    <FormControl fullWidth>
-                      <KeyboardDatePicker
-                        id="end-date-picker"
-                        label="Latest Possible Possible End Date"
-                        value={endDate}
-                        minDate={dateMax(endDate, addDays(startDate, days))}
-                        onChange={handleEndDateChange}
-                        KeyboardButtonProps={{
-                          "aria-label": "change latest end date"
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={7}>
+                      <CustomInput
+                        labelText="Organizer"
+                        id="organizer"
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          value: organizer,
+                          onChange: handleOrganizerChange
                         }}
                       />
-                    </FormControl>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={2}>
-                    <FormControl fullWidth>
-                      <TextField
-                        id="num-days"
-                        label="Duration"
-                        value={days}
-                        onChange={handleDaysChange}
+                    </GridItem>
+                  </GridContainer>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={5}>
+                      <FormControl fullWidth>
+                        <KeyboardDatePicker
+                          id="start-date-picker"
+                          label="Earliest Possible Start Date"
+                          value={startDate}
+                          onChange={handleStartDateChange}
+                          KeyboardButtonProps={{
+                            "aria-label": "change earliest start date"
+                          }}
+                        />
+                      </FormControl>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={5}>
+                      <FormControl fullWidth>
+                        <KeyboardDatePicker
+                          id="end-date-picker"
+                          label="Latest Possible Possible End Date"
+                          value={endDate}
+                          minDate={dateMax(endDate, addDays(startDate, days))}
+                          onChange={handleEndDateChange}
+                          KeyboardButtonProps={{
+                            "aria-label": "change latest end date"
+                          }}
+                        />
+                      </FormControl>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={2}>
+                      <FormControl fullWidth>
+                        <TextField
+                          id="num-days"
+                          label="Duration"
+                          value={days}
+                          onChange={handleDaysChange}
+                        />
+                      </FormControl>
+                    </GridItem>
+                  </GridContainer>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Comma Separated Destinations in Priority Order"
+                        id="destinations"
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          value: destinations.join(", "),
+                          onChange: handleDestinationsChange
+                        }}
                       />
-                    </FormControl>
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Comma Separated Destinations in Priority Order"
-                      id="destinations"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        value: destinations.join(", "),
-                        onChange: handleDestinationsChange
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Description"
-                      id="about-me"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        multiline: true,
-                        rows: 5,
-                        value: description,
-                        onChange: handleDescriptionChange
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-              </CardBody>
-              <CardFooter>
-                <Button
-                  color="primary"
-                  disabled={
-                    !allSet([
-                      name,
-                      description,
-                      organizer,
-                      startDate,
-                      endDate,
-                      days,
-                      destinations
-                    ])
-                  }
-                  onClick={handleCreateNewConferenceSubmission}
-                >
-                  Update Conference
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
-        </GridItem>
-      </GridContainer>
+                    </GridItem>
+                  </GridContainer>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Description"
+                        id="about-me"
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          multiline: true,
+                          rows: 5,
+                          value: description,
+                          onChange: handleDescriptionChange
+                        }}
+                      />
+                    </GridItem>
+                  </GridContainer>
+                </CardBody>
+                <CardFooter>
+                  <Button
+                    color="primary"
+                    disabled={
+                      !allSet([
+                        name,
+                        description,
+                        organizer,
+                        startDate,
+                        endDate,
+                        days,
+                        destinations
+                      ])
+                    }
+                    onClick={handleCreateNewConferenceSubmission}
+                  >
+                    Update Conference
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+          </GridItem>
+        </GridContainer>
+      )}
     </MuiPickersUtilsProvider>
   );
 }
