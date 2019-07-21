@@ -75,6 +75,8 @@ function CreateConferencePage(props) {
   const [register, setRegisterSuccess] = React.useState(false);
   const [conferenceInfo, setConferenceInfo] = React.useState("");
   const [email, setEmail] = React.useState("");
+  const [quoteFetchState, setQuoteFetchState] = React.useState("FETCHING");
+  const [quote, setQuote] = React.useState("");
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -139,6 +141,18 @@ function CreateConferencePage(props) {
       .catch(error => {
         alert("Ooops! Something went wrong, can you register again?");
         throw error;
+      });
+  }
+
+  if (quoteFetchState === "FETCHING") {
+    setQuoteFetchState("WAITING");
+    fetch("/api/quote")
+      .then(r => r.json())
+      .then(r => {
+        if (r.status === "ok") {
+          setQuote(`"${r.info.quote} - ${r.info.by}"`);
+          setQuoteFetchState("FETCHED");
+        }
       });
   }
 
@@ -293,6 +307,13 @@ function CreateConferencePage(props) {
                     />
                   </GridItem>
                 </GridContainer>
+                {quote && (
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <h4>Here is some inspiration: {quote}</h4>
+                    </GridItem>
+                  </GridContainer>
+                )}
               </CardBody>
               <CardFooter>
                 <Button
