@@ -22,6 +22,7 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import { makeStyles } from "@material-ui/core/styles";
 // core components
 import CircularProgress from "@material-ui/core/CircularProgress";
+import { Slider } from "material-ui-slider";
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
 import Table from "components/Table/Table.jsx";
@@ -141,8 +142,8 @@ function TableList(props) {
   if (destinationInfoState === "NOT_FETCHED") {
     fetchAndComputeTableData(slug);
   }
-  function handleRangeChange(event) {
-    const range = Number(event.target.value);
+  function handleRangeChange(value) {
+    const range = Number(value);
     setCeRange(range);
     const weighted = _formatTableData(
       _getCostEmissionByRange(tableData, range)
@@ -165,10 +166,11 @@ function TableList(props) {
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>
-                  Cost and Emissions trade off
+                  Cost and Emissions Tradeoff
                 </h4>
                 <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by travel expense
+                  Destinations ranked by best possible travel expense for
+                  desired efficiency
                 </p>
               </CardHeader>
               <CardBody>
@@ -190,19 +192,19 @@ function TableList(props) {
                       </a>
                     </CardAvatar>
                     <div className={classes.bestChoice}>
-                      <p> Best Choice: {costEmissionWeightedTable[0][0]}</p>
-                      <div className={classes.ceSlider}>
-                        Emissions
-                        <input
-                          type="range"
-                          name="emissionRange"
-                          min="1"
-                          max="10"
-                          value={ceRange}
-                          onChange={handleRangeChange}
-                        ></input>
-                        Cost
-                      </div>
+                      <h4>Best Choice: {costEmissionWeightedTable[0][0]}</h4>
+                      <GridContainer>
+                        <GridItem sm={3}><p>Emissions</p></GridItem>
+                        <GridItem sm={6}>
+                          <Slider
+                            min={1}
+                            max={10}
+                            value={ceRange}
+                            onChange={handleRangeChange}
+                          />
+                        </GridItem>
+                        <GridItem sm={3}><p>Cost</p></GridItem>
+                      </GridContainer>
                     </div>
                   </GridItem>
                   {/* end of sidebar info */}
@@ -211,7 +213,11 @@ function TableList(props) {
                     {destinationInfoState === "FETCHED" ? (
                       <Table
                         tableHeaderColor="primary"
-                        tableHead={["Host City", "Emissions", "Cost"]}
+                        tableHead={[
+                          "Host City",
+                          "Emissions CO2/m3",
+                          "Cost (USD $)"
+                        ]}
                         tableData={costEmissionWeightedTable}
                       />
                     ) : (
@@ -238,10 +244,10 @@ function TableList(props) {
                     tableHeaderColor="primary"
                     tableHead={[
                       "Destination City",
-                      "Max Cost",
-                      "Max Cost Emissions",
-                      "Min Cost",
-                      "Min Cost Emissions"
+                      "Max Cost (USD)",
+                      "Max Cost Emissions CO2/m3",
+                      "Min Cost (USD)",
+                      "Min Cost Emissions CO2/m3"
                     ]}
                     tableData={costEmissionTable}
                   />
@@ -260,7 +266,7 @@ function TableList(props) {
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>
-                  Cost and Emissions trade off
+                  Cost and Emissions Tradeoff
                 </h4>
                 <p className={classes.cardCategoryWhite}>
                   Destinations ranked by travel expense (This is a dummy table)
@@ -268,17 +274,20 @@ function TableList(props) {
               </CardHeader>
               <CardBody>
                 <p>Set our priorities</p>
-                <div>
-                  Emissions
-                  <input
-                    type="range"
-                    name="emissionRange"
-                    min="1"
-                    max="10"
-                    value={ceRange}
-                    onChange={handleRangeChange}
-                  ></input>
-                  Cost
+                <div className={classes.bestChoice}>
+                  <h4>Best Choice: {costEmissionWeightedTable[0][0]}</h4>
+                  <GridContainer>
+                    <GridItem sm={3}><p>Emissions</p></GridItem>
+                    <GridItem sm={6}>
+                      <Slider
+                        min={1}
+                        max={10}
+                        value={ceRange}
+                        onChange={handleRangeChange}
+                      />
+                    </GridItem>
+                    <GridItem sm={3}><p>Cost</p></GridItem>
+                  </GridContainer>
                 </div>
                 {destinationInfoState === "FETCHED" ? (
                   <Table
