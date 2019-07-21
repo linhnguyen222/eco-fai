@@ -564,7 +564,8 @@ module.exports = app => {
             `Thanks for doing your bit to save on CO2 emissions `,
             `by planning your Conference on ecofai!<br />`,
             `Get people to register for your conference at ${info.urlOrigin}/admin/update/${conference.slug}.<br />`,
-            `You can edit your conference at ${info.urlOrigin}/admin/update/${conference.slug}.`,
+            `You can edit your conference at ${info.urlOrigin}/admin/update/${conference.slug}.<br/></br>`,
+            `View a location that is better on both the environment and the wallets of your attendees at any time, at ${info.urlOrigin}/admin/destinations/${conference.slug}.`,
             "</body>",
             "</html>"
           ].join("")

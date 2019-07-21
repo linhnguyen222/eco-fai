@@ -182,6 +182,14 @@ function CreateConferencePage(props) {
                       {window.location.origin +
                         "/admin/update/" +
                         conferenceInfo.slug}
+                      <br />
+                      <br />
+                      View a location that is better on both the environment and
+                      the wallets of your attendees at any time, at
+                      {window.location.origin +
+                        "/admin/destinations/" +
+                        conferenceInfo.slug}
+                      .
                     </p>
                   </GridItem>
                 </GridContainer>
