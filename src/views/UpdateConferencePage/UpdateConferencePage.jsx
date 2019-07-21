@@ -64,7 +64,7 @@ const allSet = args => {
 };
 
 function UpdateConferencePage(props) {
-  const { classes, match } = props;
+  const { classes, match, history } = props;
   const slug = match.params.slug;
 
   const [startDate, setStartDate] = React.useState(new Date());
@@ -138,7 +138,7 @@ function UpdateConferencePage(props) {
       });
   }
 
-  if (fetchState === "FETCHING") {
+  function fetchConferenceInfo(slug) {
     setFetchState("WAITING");
     fetch(`/api/conference-proposal/${slug}`)
       .then(r => r.json())
@@ -158,10 +158,22 @@ function UpdateConferencePage(props) {
       });
   }
 
+  function navigateToSlug(slug) {
+    history.push(`/admin/update/${slug}`);
+    fetchConferenceInfo(slug);
+  }
+
+  if (fetchState === "FETCHING") {
+    fetchConferenceInfo(slug);
+  }
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       {slug === ":slug" ? (
-        <EnterConferenceSlug classes={classes} />
+        <EnterConferenceSlug
+          classes={classes}
+          navigateToConferenceSlug={navigateToSlug}
+        />
       ) : (
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
@@ -326,6 +338,7 @@ function UpdateConferencePage(props) {
 
 UpdateConferencePage.propTypes = {
   match: PropTypes.object,
+  history: PropTypes.object,
   classes: PropTypes.object
 };
 

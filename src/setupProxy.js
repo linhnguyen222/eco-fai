@@ -779,6 +779,27 @@ module.exports = app => {
       }
     });
   });
+  app.get("/api/conference-exists/:slug", async (req, res) => {
+    const { Conference } = await lazyLoadModels();
+    const conferences = await Conference.query("slug")
+      .eq(req.params.slug)
+      .exec();
+
+    if (!conferences.length) {
+      res.json({
+        status: "err",
+        error: {
+          code: "NO_SUCH_CONFERENCE",
+          msg: `No such conference ${req.params.slug}`
+        }
+      });
+      return;
+    }
+
+    res.json({
+      status: "ok"
+    });
+  });
   app.get("/api/conference-proposal/:slug", async (req, res) => {
     const { Conference } = await lazyLoadModels();
     const conferences = await Conference.query("slug")

@@ -1,30 +1,78 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+import Button from "components/CustomButtons/Button.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
+import CustomInput from "components/CustomInput/CustomInput.jsx";
+import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
 
-const EnterConferenceSlug = ({ classes }) => {
+const EnterConferenceSlug = ({ classes, navigateToConferenceSlug }) => {
+  let [code, setCode] = React.useState("");
+  let [codeError, setCodeError] = React.useState("");
+
+  function handleNameChange(event) {
+    setCode(event.target.value);
+    setCodeError("");
+  }
+
+  function handleCheckConference() {
+    fetch(`/api/conference-exists/${code}`)
+      .then(r => r.json())
+      .then(r => {
+        if (r.error) {
+          setCodeError(r.error.msg);
+        } else {
+          navigateToConferenceSlug(code);
+        }
+      });
+  }
+
   return (
     <GridContainer>
       <Card>
         <CardHeader color="warning">
-          <h3 className={classes.cardTitleWhite}>
-            No Conference slug in the url
-          </h3>
+          <h3 className={classes.cardTitleWhite}>Conference Code Required</h3>
         </CardHeader>
         <h4 style={{ padding: "30px" }}>
-          You need to put in your conference slug in order to register to a
-          conference, replace `:slug` in the url with your conference slug
+          Enter your conference code to see this page
         </h4>
+        <GridItem xs={12} sm={12} md={12}>
+          <GridContainer>
+            <GridItem xs={12} sm={12} md={8}>
+              <CustomInput
+                labelText={codeError || "Conference Code"}
+                id="name"
+                formControlProps={{
+                  fullWidth: true
+                }}
+                inputProps={{
+                  value: code,
+                  onChange: handleNameChange,
+                  error: !!codeError
+                }}
+              />
+            </GridItem>
+            <GridItem xs={12} sm={12} md={4}>
+              <Button
+                color="primary"
+                disabled={!code}
+                onClick={handleCheckConference}
+              >
+                Continue
+              </Button>
+            </GridItem>
+          </GridContainer>
+        </GridItem>
       </Card>
     </GridContainer>
   );
 };
 
 EnterConferenceSlug.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
+  navigateToConferenceSlug: PropTypes.func.isRequired
 };
 
 export default EnterConferenceSlug;

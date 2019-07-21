@@ -64,7 +64,7 @@ const styles = {
 };
 
 function RegisterForConference(props) {
-  const { classes, match } = props;
+  const { classes, match, history } = props;
   const slug = match.params.slug;
   const [startDate, setStartDate] = React.useState(new Date());
   const [endDate, setEndDate] = React.useState(new Date());
@@ -122,13 +122,7 @@ function RegisterForConference(props) {
       });
   }
 
-  const conferenceInfoLoaded = !!(
-    conferenceName.length &&
-    conferenceDescription.length &&
-    conferenceOrganizer.length
-  );
-
-  if (conferenceInfoState === "NOT_FETCHED") {
+  function fetchConferenceInfo(slug) {
     setConferenceInfoState("WAITING");
     fetch(`/api/conference-proposal/${slug}`)
       .then(res => res.json())
@@ -150,10 +144,28 @@ function RegisterForConference(props) {
       });
   }
 
+  function navigateToSlug(slug) {
+    history.push(`/admin/register/${slug}`);
+    fetchConferenceInfo(slug);
+  }
+
+  const conferenceInfoLoaded = !!(
+    conferenceName.length &&
+    conferenceDescription.length &&
+    conferenceOrganizer.length
+  );
+
+  if (conferenceInfoState === "NOT_FETCHED") {
+    fetchConferenceInfo(slug);
+  }
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       {slug === ":slug" ? (
-        <EnterConferenceSlug classes={classes} />
+        <EnterConferenceSlug
+          classes={classes}
+          navigateToConferenceSlug={navigateToSlug}
+        />
       ) : (
         <GridContainer>
           <GridItem xs={12} sm={12} md={conferenceInfoLoaded ? 8 : 12}>
@@ -273,7 +285,8 @@ function RegisterForConference(props) {
 
 RegisterForConference.propTypes = {
   classes: PropTypes.object,
-  match: PropTypes.object
+  match: PropTypes.object,
+  history: PropTypes.object
 };
 
 export default withRouter(withStyles(styles)(RegisterForConference));
