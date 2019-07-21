@@ -20,14 +20,16 @@ import React from "react";
 import PropTypes from "prop-types";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
+import { makeStyles } from "@material-ui/core/styles";
 // core components
+import CircularProgress from "@material-ui/core/CircularProgress";
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
 import Table from "components/Table/Table.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
-import data from "./dump.jsx";
+import EnterConferenceSlug from "components/EnterConferenceSlug/EnterConferenceSlug.jsx";
 
 const styles = {
   cardCategoryWhite: {
@@ -59,8 +61,15 @@ const styles = {
   }
 };
 
+const useStyles = makeStyles(theme => ({
+  progress: {
+    margin: theme.spacing(2)
+  }
+}));
+
 function TableList(props) {
-  const { classes, match } = props;
+  const { classes, match, history } = props;
+  const { progress } = useStyles();
   const slug = match.params.slug;
   const [destinationInfoState, setDestinationInfoState] = React.useState(
     "NOT_FETCHED"
@@ -71,29 +80,14 @@ function TableList(props) {
     setCostEmissionWeightedTable
   ] = React.useState([[""]]);
   const [ceRange, setCeRange] = React.useState(0);
-  const [tableData, setTableData] = React.useState(data);
+  const [tableData, setTableData] = React.useState({});
 
-  if (destinationInfoState === "NOT_FETCHED") {
+  function fetchAndComputeTableData(slug) {
     setDestinationInfoState("WAITING");
     fetch(`/api/conference-interest/${slug}`)
       .then(res => res.json())
       .then(res => {
-        if (res.status === "err") {
-          alert(
-            "Opps! Something went wrong, can you check your conference slug in the url"
-          );
-          setDestinationInfoState(res.error.code);
-          // show the dummy table
-          const dumpCostEmission = _formatTableData(
-            _getCostEmissionsTable(tableData)
-          );
-          setCostEmissionTable(dumpCostEmission);
-          // show dummny weighted table
-          const dumpWeighted = _formatTableData(
-            _getCostEmissionByRange(tableData, ceRange)
-          );
-          setCostEmissionWeightedTable(dumpWeighted);
-        } else {
+        if (res.status !== "err") {
           setDestinationInfoState("FETCHED");
           // set table Data
           setTableData(res);
@@ -107,22 +101,16 @@ function TableList(props) {
           setCostEmissionWeightedTable(weighted);
         }
       })
-      .catch(err => {
-        alert(
-          "Opps! Something went wrong, can you check your conference slug in the url"
-        );
-        const dumpCostEmission = _formatTableData(
-          _getCostEmissionsTable(tableData)
-        );
-        setCostEmissionTable(dumpCostEmission);
+      .catch(e => console.error(e));
+  }
 
-        // show dummny weighted table
-        const dumpWeighted = _formatTableData(
-          _getCostEmissionByRange(tableData, ceRange)
-        );
-        setCostEmissionWeightedTable(dumpWeighted);
-        throw err;
-      });
+  function navigateToSlug(slug) {
+    history.push(`/admin/destinations/${slug}`);
+    fetchAndComputeTableData(slug);
+  }
+
+  if (destinationInfoState === "NOT_FETCHED") {
+    fetchAndComputeTableData(slug);
   }
   function handleRangeChange(event) {
     const range = Number(event.target.value);
@@ -134,7 +122,12 @@ function TableList(props) {
   }
   return (
     <div>
-      {destinationInfoState === "FETCHED" ? (
+      {slug === ":slug" ? (
+        <EnterConferenceSlug
+          classes={classes}
+          navigateToConferenceSlug={navigateToSlug}
+        />
+      ) : destinationInfoState === "FETCHED" ? (
         <GridContainer>
           <GridItem xs={12} sm={12} md={6}>
             <Card>
@@ -158,11 +151,15 @@ function TableList(props) {
                   onChange={handleRangeChange}
                 ></input>
                 Cost
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={["Destination City", "Emissions", "Cost"]}
-                  tableData={costEmissionWeightedTable}
-                />
+                {destinationInfoState === "FETCHED" ? (
+                  <Table
+                    tableHeaderColor="primary"
+                    tableHead={["Destination City", "Emissions", "Cost"]}
+                    tableData={costEmissionWeightedTable}
+                  />
+                ) : (
+                  <CircularProgress className={progress} />
+                )}
               </CardBody>
             </Card>
           </GridItem>
@@ -177,17 +174,21 @@ function TableList(props) {
                 </p>
               </CardHeader>
               <CardBody>
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={[
-                    "Destination City",
-                    "Max Cost",
-                    "Max Cost Emissions",
-                    "Min Cost",
-                    "Min Cost Emissions"
-                  ]}
-                  tableData={costEmissionTable}
-                />
+                {destinationInfoState === "FETCHED" ? (
+                  <Table
+                    tableHeaderColor="primary"
+                    tableHead={[
+                      "Destination City",
+                      "Max Cost",
+                      "Max Cost Emissions",
+                      "Min Cost",
+                      "Min Cost Emissions"
+                    ]}
+                    tableData={costEmissionTable}
+                  />
+                ) : (
+                  <CircularProgress className={progress} />
+                )}
               </CardBody>
             </Card>
           </GridItem>
@@ -217,11 +218,15 @@ function TableList(props) {
                   onChange={handleRangeChange}
                 ></input>
                 Cost
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={["Destination City", "Emissions", "Cost"]}
-                  tableData={costEmissionWeightedTable}
-                />
+                {destinationInfoState === "FETCHED" ? (
+                  <Table
+                    tableHeaderColor="primary"
+                    tableHead={["Destination City", "Emissions", "Cost"]}
+                    tableData={costEmissionWeightedTable}
+                  />
+                ) : (
+                  <CircularProgress className={progress} />
+                )}
               </CardBody>
             </Card>
           </GridItem>
@@ -236,17 +241,21 @@ function TableList(props) {
                 </p>
               </CardHeader>
               <CardBody>
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={[
-                    "Destination City",
-                    "Max Cost",
-                    "Max Cost Emissions",
-                    "Min Cost",
-                    "Min Cost Emissions"
-                  ]}
-                  tableData={costEmissionTable}
-                />
+                {destinationInfoState === "FETCHED" ? (
+                  <Table
+                    tableHeaderColor="primary"
+                    tableHead={[
+                      "Destination City",
+                      "Max Cost",
+                      "Max Cost Emissions",
+                      "Min Cost",
+                      "Min Cost Emissions"
+                    ]}
+                    tableData={costEmissionTable}
+                  />
+                ) : (
+                  <CircularProgress className={progress} />
+                )}
               </CardBody>
             </Card>
           </GridItem>
@@ -326,7 +335,8 @@ function _formatTableData(data) {
 }
 TableList.propTypes = {
   classes: PropTypes.object,
-  match: PropTypes.object
+  match: PropTypes.object,
+  history: PropTypes.object
 };
 
 export default withStyles(styles)(TableList);
