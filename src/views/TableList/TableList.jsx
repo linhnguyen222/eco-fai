@@ -28,13 +28,9 @@ import Table from "components/Table/Table.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
-<<<<<<< HEAD
 import EnterConferenceSlug from "components/EnterConferenceSlug/EnterConferenceSlug.jsx";
-=======
 import CardAvatar from "components/Card/CardAvatar.jsx";
-import data from "./dump.jsx";
 import avatar from "assets/img/cities/Copenhagen.png";
->>>>>>> dyniamic images for cost and emission trade off table
 
 const styles = {
   cardCategoryWhite: {
@@ -98,16 +94,13 @@ function TableList(props) {
     setCostEmissionWeightedTable
   ] = React.useState([[""]]);
   const [ceRange, setCeRange] = React.useState(0);
-  const [tableData, setTableData] = React.useState({});
+  const [tableData, setTableData] = React.useState([[""]]);
 
   function fetchAndComputeTableData(slug) {
     setDestinationInfoState("WAITING");
     fetch(`/api/conference-interest/${slug}`)
       .then(res => res.json())
       .then(res => {
-<<<<<<< HEAD
-        if (res.status !== "err") {
-=======
         if (res.status === "err") {
           // alert(
           //   "Opps! Something went wrong, can you check your conference slug in the url"
@@ -124,7 +117,6 @@ function TableList(props) {
           );
           setCostEmissionWeightedTable(dumpWeighted);
         } else {
->>>>>>> dyniamic images for cost and emission trade off table
           setDestinationInfoState("FETCHED");
           // set table Data
           setTableData(res);
@@ -138,19 +130,8 @@ function TableList(props) {
           setCostEmissionWeightedTable(weighted);
         }
       })
-<<<<<<< HEAD
       .catch(e => console.error(e));
   }
-=======
-      .catch(err => {
-        // alert(
-        //   "Opps! Something went wrong, can you check your conference slug in the url"
-        // );
-        const dumpCostEmission = _formatTableData(
-          _getCostEmissionsTable(tableData)
-        );
-        setCostEmissionTable(dumpCostEmission);
->>>>>>> dyniamic images for cost and emission trade off table
 
   function navigateToSlug(slug) {
     history.push(`/admin/destinations/${slug}`);
@@ -191,28 +172,6 @@ function TableList(props) {
                 </p>
               </CardHeader>
               <CardBody>
-<<<<<<< HEAD
-                <p>Set your priority</p>
-                Emissions
-                <input
-                  type="range"
-                  name="emissionRange"
-                  min="1"
-                  max="10"
-                  value={ceRange}
-                  onChange={handleRangeChange}
-                ></input>
-                Cost
-                {destinationInfoState === "FETCHED" ? (
-                  <Table
-                    tableHeaderColor="primary"
-                    tableHead={["Destination City", "Emissions", "Cost"]}
-                    tableData={costEmissionWeightedTable}
-                  />
-                ) : (
-                  <CircularProgress className={progress} />
-                )}
-=======
                 <GridContainer>
                   {/* sidebar info */}
                   <GridItem xs={12} sm={12} md={6}>
@@ -256,7 +215,6 @@ function TableList(props) {
                     />
                   </GridItem>
                 </GridContainer>
->>>>>>> dyniamic images for cost and emission trade off table
               </CardBody>
             </Card>
           </GridItem>
@@ -306,27 +264,6 @@ function TableList(props) {
               </CardHeader>
               <CardBody>
                 <p>Set our priorities</p>
-<<<<<<< HEAD
-                Emissions
-                <input
-                  type="range"
-                  name="emissionRange"
-                  min="1"
-                  max="10"
-                  value={ceRange}
-                  onChange={handleRangeChange}
-                ></input>
-                Cost
-                {destinationInfoState === "FETCHED" ? (
-                  <Table
-                    tableHeaderColor="primary"
-                    tableHead={["Destination City", "Emissions", "Cost"]}
-                    tableData={costEmissionWeightedTable}
-                  />
-                ) : (
-                  <CircularProgress className={progress} />
-                )}
-=======
                 <div>
                   Emissions
                   <input
@@ -344,7 +281,6 @@ function TableList(props) {
                   tableHead={["Destination City", "Emissions", "Cost"]}
                   tableData={costEmissionWeightedTable}
                 />
->>>>>>> dyniamic images for cost and emission trade off table
               </CardBody>
             </Card>
           </GridItem>
