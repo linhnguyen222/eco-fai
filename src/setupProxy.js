@@ -262,6 +262,32 @@ const encodeQuery = params =>
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join("&");
 
+const baseBackOff = 500;
+const max = 10000;
+
+const handleThroughput = async (
+  model,
+  method,
+  backoff = baseBackOff,
+  attempt = 1
+) => {
+  try {
+    await new Promise(res => setTimeout(res, backoff));
+    let response = await method(model);
+    return response;
+  } catch (e) {
+    if (e.code === "ProvisionedThroughputExceededException") {
+      console.log(e);
+      let tempt = Math.min(max, baseBackOff * Math.pow(2, attempt));
+      backoff = tempt / 2 + Math.floor(Math.random() * (tempt / 2));
+      console.log("Backing off for " + backoff);
+      return await handleThroughput(model, method, backoff, ++attempt);
+    } else throw e;
+  }
+};
+
+const batchPut = (m, data) => m.batchPut(data);
+
 const queryFlightsForRegistrant = async (conference, interest) => {
   // In the background, slide the window across the feasible
   // conference dates and work out what the flight options are
@@ -349,6 +375,18 @@ const fromEntries = arr =>
 
 const deduplicateKVs = arr => {
   return Object.entries(fromEntries(arr));
+};
+
+const splitBatches = arr => {
+  let len = 10;
+  var chunks = [],
+    i = 0,
+    n = arr.length;
+
+  while (i < n) {
+    chunks.push(arr.slice(i, (i += len)));
+  }
+  return chunks;
 };
 
 module.exports = app => {
@@ -560,7 +598,7 @@ module.exports = app => {
       registration
     );
 
-    const airportInfoPromises = await AirportInfo.batchPut(
+    const airportInfoPromises = splitBatches(
       deduplicateKVs(
         possibleFlightInformation
           .map(info => Object.entries(info.airports || {}))
@@ -570,20 +608,20 @@ module.exports = app => {
         city,
         name
       }))
-    );
+    ).map(a => handleThroughput(AirportInfo, m => batchPut(m, a)));
 
-    const airlineInfoPromises = await AirlineInfo.batchPut(
+    const airlineInfoPromises = splitBatches(
       deduplicateKVs(
         possibleFlightInformation
           .map(info => Object.entries(info.airlines || {}))
           .flat()
       ).map(([code, { name }]) => ({ code, name }))
-    );
+    ).map(a => handleThroughput(AirlineInfo, m => batchPut(m, a)));
 
     // Keep track of feasible itineraries here, we'll need them later
     const feasibleItineraries = [];
 
-    const travelItineraryPromises = await TravelItinerary.batchPut(
+    const travelItineraryPromises = splitBatches(
       deduplicateKVs(
         possibleFlightInformation
           .map(info =>
@@ -607,9 +645,9 @@ module.exports = app => {
         price,
         routing_ids: routing_idens
       }))
-    );
+    ).map(a => handleThroughput(TravelItinerary, m => batchPut(m, a)));
 
-    const travelRoutingPromises = await TravelRouting.batchPut(
+    const travelRoutingPromises = splitBatches(
       deduplicateKVs(
         possibleFlightInformation
           .map(info =>
@@ -623,9 +661,9 @@ module.exports = app => {
         id,
         legs: leg_idens
       }))
-    );
+    ).map(a => handleThroughput(TravelRouting, m => batchPut(m, a)));
 
-    const travelLegPromises = TravelLeg.batchPut(
+    const travelLegPromises = splitBatches(
       deduplicateKVs(
         possibleFlightInformation.map(info => Object.entries(info.legs)).flat()
       ).map(
@@ -641,7 +679,7 @@ module.exports = app => {
           from_code: from_code
         })
       )
-    );
+    ).map(a => handleThroughput(TravelLeg, m => batchPut(m, a)));
 
     await Promise.all(
       [
@@ -655,7 +693,7 @@ module.exports = app => {
 
     registration.possibleFlightInformation = feasibleItineraries;
     await registration.save();
-    // console.log(`Finished registering participant from ${info.from}`);
+    console.log(`Finished registering participant from ${info.from}`);
   });
   app.get("/api/conferences", async (req, res) => {
     const { Conference } = await lazyLoadModels();
