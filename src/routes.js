@@ -21,15 +21,11 @@ import WhereToVote from "@material-ui/icons/WhereToVote";
 import TrackChanges from "@material-ui/icons/TrackChanges";
 // import Person from "@material-ui/icons/Person";
 
-import LocationOn from "@material-ui/icons/LocationOn";
-import Notifications from "@material-ui/icons/Notifications";
 // core components/views for Admin layout
 import CreateConferencePage from "views/CreateConferencePage/CreateConferencePage.jsx";
 import UpdateConferencePage from "views/UpdateConferencePage/UpdateConferencePage.jsx";
 // import UserProfile from "views/UserProfile/UserProfile.jsx";
 import TableList from "views/TableList/TableList.jsx";
-import Maps from "views/Maps/Maps.jsx";
-import NotificationsPage from "views/Notifications/Notifications.jsx";
 import RegisterForConferencePage from "views/RegisterForConferencePage/RegisterForConferencePage";
 // import Dashboard from "views/Dashboard/Dashboard";
 
