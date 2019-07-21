@@ -208,11 +208,15 @@ function TableList(props) {
                   {/* end of sidebar info */}
                   {/* The table */}
                   <GridItem xs={12} sm={12} md={5}>
-                    <Table
-                      tableHeaderColor="primary"
-                      tableHead={["Host City", "Emissions", "Cost"]}
-                      tableData={costEmissionWeightedTable}
-                    />
+                    {destinationInfoState === "FETCHED" ? (
+                      <Table
+                        tableHeaderColor="primary"
+                        tableHead={["Host City", "Emissions", "Cost"]}
+                        tableData={costEmissionWeightedTable}
+                      />
+                    ) : (
+                      <CircularProgress className={progress} />
+                    )}
                   </GridItem>
                 </GridContainer>
               </CardBody>
@@ -276,11 +280,15 @@ function TableList(props) {
                   ></input>
                   Cost
                 </div>
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={["Destination City", "Emissions", "Cost"]}
-                  tableData={costEmissionWeightedTable}
-                />
+                {destinationInfoState === "FETCHED" ? (
+                  <Table
+                    tableHeaderColor="primary"
+                    tableHead={["Host City", "Emissions", "Cost"]}
+                    tableData={costEmissionWeightedTable}
+                  />
+                ) : (
+                  <CircularProgress className={progress} />
+                )}
               </CardBody>
             </Card>
           </GridItem>
