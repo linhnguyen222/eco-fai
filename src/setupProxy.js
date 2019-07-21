@@ -400,6 +400,17 @@ const splitBatches = arr => {
   return chunks;
 };
 
+const sendEmailUsingSendgrind = contents => {
+  return fetch(`https://api.sendgrid.com/v3/mail/send`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`
+    },
+    body: JSON.stringify(contents)
+  }).catch(e => console.error(e));
+};
+
 module.exports = app => {
   const lazyLoadModels = lazyLoadModelsClosure();
 
@@ -496,9 +507,10 @@ module.exports = app => {
     const { info } = req.body;
     const { Conference } = await lazyLoadModels();
     const airports = await findNearbyAirports(info.locationPreferences);
+    const slug = slugify(info.name);
 
     const conference = new Conference({
-      slug: slugify(info.name),
+      slug,
       name: info.name,
       description: info.description,
       earliestStartDate: new Date(info.earliestStartDate),
@@ -506,9 +518,40 @@ module.exports = app => {
       days: info.days,
       organizer: info.organizer,
       locationPreferences: info.locationPreferences,
-      airports: airports
+      airports: airports,
+      urlOrigin: info.urlOrigin
     });
     await conference.save();
+    await sendEmailUsingSendgrind({
+      personalizations: [
+        {
+          to: [
+            {
+              email: info.email
+            }
+          ],
+          subject: "The planet ♥️ your conference"
+        }
+      ],
+      from: {
+        email: "noreply@ecof.ai"
+      },
+      content: [
+        {
+          type: "text/html",
+          value: [
+            "<html>",
+            "<body>",
+            `Thanks for doing your bit to save on CO2 emissions `,
+            `by planning your Conference on ecofai!<br />`,
+            `Get people to register for your conference at ${info.urlOrigin}/admin/update/${conference.slug}.<br />`,
+            `You can edit your conference at ${info.urlOrigin}/admin/update/${conference.slug}.`,
+            "</body>",
+            "</html>"
+          ].join("")
+        }
+      ]
+    });
     res.json({
       status: "ok",
       info: {

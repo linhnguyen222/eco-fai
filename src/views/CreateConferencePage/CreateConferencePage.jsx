@@ -74,6 +74,7 @@ function CreateConferencePage(props) {
   const [destinations, setDestinations] = React.useState([]);
   const [register, setRegisterSuccess] = React.useState(false);
   const [conferenceInfo, setConferenceInfo] = React.useState("");
+  const [email, setEmail] = React.useState("");
 
   function handleStartDateChange(date) {
     setStartDate(date);
@@ -105,6 +106,10 @@ function CreateConferencePage(props) {
     );
   }
 
+  function handleEmailChange(event) {
+    setEmail(event.target.value);
+  }
+
   function handleCreateNewConferenceSubmission() {
     fetch("/api/register-conference", {
       url: "/api/register-conference",
@@ -118,9 +123,11 @@ function CreateConferencePage(props) {
           organizer,
           days,
           description,
+          email,
           earliestStartDate: startDate,
           latestEndDate: endDate,
-          locationPreferences: destinations
+          locationPreferences: destinations,
+          urlOrigin: window.location.origin
         }
       })
     })
@@ -255,6 +262,19 @@ function CreateConferencePage(props) {
                       }}
                     />
                   </GridItem>
+                  <GridItem xs={12} sm={12} md={4}>
+                    <CustomInput
+                      labelText="Email"
+                      id="destinations"
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                      inputProps={{
+                        value: email,
+                        onChange: handleEmailChange
+                      }}
+                    />
+                  </GridItem>
                 </GridContainer>
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
@@ -285,7 +305,8 @@ function CreateConferencePage(props) {
                       startDate,
                       endDate,
                       days,
-                      destinations
+                      destinations,
+                      email
                     ])
                   }
                   onClick={handleCreateNewConferenceSubmission}
