@@ -18,6 +18,7 @@
 // @material-ui/icons
 import Create from "@material-ui/icons/Create";
 import WhereToVote from "@material-ui/icons/WhereToVote";
+import TrackChanges from "@material-ui/icons/TrackChanges";
 // import Person from "@material-ui/icons/Person";
 
 import LocationOn from "@material-ui/icons/LocationOn";
@@ -43,7 +44,7 @@ const dashboardRoutes = [
   {
     path: "/update/:slug",
     name: "Update",
-    icon: Create,
+    icon: TrackChanges,
     component: UpdateConferencePage,
     layout: "/admin"
   },
