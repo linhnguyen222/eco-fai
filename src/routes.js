@@ -29,6 +29,7 @@ import TableList from "views/TableList/TableList.jsx";
 import Maps from "views/Maps/Maps.jsx";
 import NotificationsPage from "views/Notifications/Notifications.jsx";
 import RegisterForConferencePage from "views/RegisterForConferencePage/RegisterForConferencePage";
+// import Dashboard from "views/Dashboard/Dashboard";
 
 const dashboardRoutes = [
   {
@@ -77,6 +78,14 @@ const dashboardRoutes = [
     component: NotificationsPage,
     layout: "/admin"
   }
+  // {
+  //   path: "/dashboard",
+  //   name: "Dashboard",
+  //   rtlName: "إخطارات",
+  //   icon: Notifications,
+  //   component: Dashboard,
+  //   layout: "/admin"
+  // }
 ];
 
 export default dashboardRoutes;

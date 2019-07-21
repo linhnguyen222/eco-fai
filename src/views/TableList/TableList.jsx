@@ -65,10 +65,13 @@ function TableList(props) {
   const [destinationInfoState, setDestinationInfoState] = React.useState(
     "NOT_FETCHED"
   );
-  // const [costTable, setCostTable] = React.useState({});
-  const [emissionTable, setEmissionTable] = React.useState([""]);
-  const [additionalInfoTable, setadditionalInfoTable] = React.useState([""]);
   const [costEmissionTable, setCostEmissionTable] = React.useState([[""]]);
+  const [
+    costEmissionWeightedTable,
+    setCostEmissionWeightedTable
+  ] = React.useState([[""]]);
+
+  const [tableData, setTableData] = React.useState(data);
   if (destinationInfoState === "NOT_FETCHED") {
     setDestinationInfoState("WAITING");
     fetch(`/api/conference-interest/${slug}`)
@@ -76,21 +79,54 @@ function TableList(props) {
       .then(res => {
         if (res.status === "err") {
           setDestinationInfoState(res.error.code);
+          // show the dummy table
+          const dumpCostEmission = _formatTableData(
+            _getCostEmissionsTable(tableData)
+          );
+          setCostEmissionTable(dumpCostEmission);
+          // show dummny weighted table
+          const dumpWeighted = _formatTableData(
+            _getCostEmissionByRange(tableData, 1)
+          );
+          setCostEmissionWeightedTable(dumpWeighted);
         } else {
           setDestinationInfoState("FETCHED");
-          // setCostTable({});
-          setEmissionTable([""]);
-          setadditionalInfoTable([""]);
+          // set table Data
+          setTableData(res);
+          // costEmissionTable
+          const costEmission = _formatTableData(
+            _getCostEmissionsTable(tableData)
+          );
+          setCostEmissionTable(costEmission);
+          // weighted cost emission table
+          const weighted = _formatTableData(
+            _getCostEmissionByRange(tableData, 1)
+          );
+          setCostEmissionWeightedTable(weighted);
         }
       })
       .catch(err => {
         alert("Opps Something went wrong");
-        const dumpCostEmission = _getCostEmissionsTable(data);
+        const dumpCostEmission = _formatTableData(
+          _getCostEmissionsTable(tableData)
+        );
         setCostEmissionTable(dumpCostEmission);
+
+        // show dummny weighted table
+        const dumpWeighted = _formatTableData(
+          _getCostEmissionByRange(tableData, 1)
+        );
+        setCostEmissionWeightedTable(dumpWeighted);
         throw err;
       });
   }
-
+  function handleRangeChange(event) {
+    const range = Number(event.target.value);
+    const weighted = _formatTableData(
+      _getCostEmissionByRange(tableData, range)
+    );
+    setCostEmissionWeightedTable(weighted);
+  }
   return (
     <div>
       {destinationInfoState === "FETCHED" ? (
@@ -126,13 +162,13 @@ function TableList(props) {
                   Destinations ranked by CO2 emission efficiency
                 </p>
               </CardHeader>
-              <CardBody>
+              {/* <CardBody>
                 <Table
                   tableHeaderColor="primary"
                   tableHead={["Destination City", "CO emission"]}
                   tableData={emissionTable}
                 />
-              </CardBody>
+              </CardBody> */}
             </Card>
           </GridItem>
           <GridItem xs={12} sm={12} md={12}>
@@ -145,7 +181,7 @@ function TableList(props) {
                   Additional infomation on destinations
                 </p>
               </CardHeader>
-              <CardBody>
+              {/* <CardBody>
                 <Table
                   tableHeaderColor="primary"
                   tableHead={[
@@ -156,13 +192,40 @@ function TableList(props) {
                   ]}
                   tableData={additionalInfoTable}
                 />
-              </CardBody>
+              </CardBody> */}
             </Card>
           </GridItem>
         </GridContainer>
       ) : (
+        // default offline page
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
+            <Card>
+              <CardHeader color="info">
+                <h4 className={classes.cardTitleWhite}>
+                  Test input bar akdfalskfdnalskd
+                </h4>
+                <p className={classes.cardCategoryWhite}>
+                  Destinations ranked by travel expense
+                </p>
+              </CardHeader>
+              <CardBody>
+                Emissions
+                <input
+                  type="range"
+                  name="emissionRange"
+                  min="1"
+                  max="10"
+                  onChange={handleRangeChange}
+                ></input>
+                Cost
+                <Table
+                  tableHeaderColor="primary"
+                  tableHead={["Destination City", "Emissions", "Cost"]}
+                  tableData={costEmissionWeightedTable}
+                />
+              </CardBody>
+            </Card>
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>
@@ -187,60 +250,6 @@ function TableList(props) {
               </CardBody>
             </Card>
           </GridItem>
-          <GridItem xs={12} sm={6} md={6}>
-            <Card>
-              <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Costs efficiency</h4>
-                <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by CO2 emission efficiency
-                </p>
-              </CardHeader>
-              <CardBody>
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={["Destination City", "CO emission"]}
-                  tableData={[
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"],
-                    ["Amsterdam", "36,738"]
-                  ]}
-                />
-              </CardBody>
-            </Card>
-          </GridItem>
-          <GridItem xs={12} sm={12} md={12}>
-            <Card plain>
-              <CardHeader plain color="info">
-                <h4 className={classes.cardTitleWhite}>
-                  Additional infomation
-                </h4>
-                <p className={classes.cardCategoryWhite}>
-                  Additional infomation on destinations
-                </p>
-              </CardHeader>
-              <CardBody>
-                <Table
-                  tableHeaderColor="primary"
-                  tableHead={[
-                    "Departure",
-                    "Destination",
-                    "Cost in USD",
-                    "Emission"
-                  ]}
-                  tableData={[
-                    ["Amsterdam", "Paris", "123.21", "100"],
-                    ["Helsinki", "Paris", "123.21", "100"],
-                    ["Amsterdam", "Berlin", "123.21", "100"],
-                    ["London", "Paris", "123.21", "100"],
-                    ["Stockholm", "Berlin", "123.21", "100"]
-                  ]}
-                />
-              </CardBody>
-            </Card>
-          </GridItem>
         </GridContainer>
       )}
     </div>
@@ -249,67 +258,70 @@ function TableList(props) {
 
 // helper functions to filter table data
 function _getCostEmissionsTable(data) {
-  var destinationsTable = _getUniqDestinationTable(data);
-  var destinationsInfo = destinationsTable.map(dest => {
-    var costEmisObj = {
-      from: dest.from,
-      destinations: dest.destinationFrontier.map(airport => {
-        var obj = {
-          name: airport.destAirport.name,
-          maxCost: airport.tradeoff[0].price * dest.registrants,
-          maxCostEmissions: airport.tradeoff[0].emissions * dest.registrants,
-          minCost:
-            airport.tradeoff[airport.tradeoff.length - 1].price *
-            dest.registrants,
-          minCostEmissions:
-            airport.tradeoff[airport.tradeoff.length - 1].emissions *
-            dest.registrants
-        };
-        return obj;
-      })
-    };
-    return costEmisObj;
-  });
-  const costEmisDestinationTable = destinationsInfo
-    .flatMap(dest => dest.destinations)
-    .reduce((a, b) => {
-      var ele = a.find(ele => ele.name === b.name);
+  var allDestinationFrontier = data.info.destinationOptimality.flatMap(
+    dest => dest.destinationFrontier
+  );
+  var costEmisDestinationTable = allDestinationFrontier.reduce((arr, df) => {
+    if (df && df.destination && df.tradeoff[0]) {
+      let ele = arr.find(ele => ele.destination === df.destination);
       if (!ele) {
-        a.push(b);
+        var obj = {
+          destination: df.destination,
+          maxCost: df.tradeoff[0].price,
+          maxCostEmissions: df.tradeoff[0].emissions,
+          minCost: df.tradeoff[df.tradeoff.length - 1].price,
+          minCostEmissions: df.tradeoff[df.tradeoff.length - 1].emissions
+        };
+        arr.push(obj);
       } else {
-        ele.maxCost = ele.maxCost + b.maxCost;
-        ele.maxCostEmissions = ele.maxCostEmissions + b.maxCostEmissions;
-        ele.minCost = ele.minCost + ele.minCost;
-        ele.minCostEmissions = ele.minCostEmissions + ele.minCostEmissions;
+        ele.maxCost = ele.maxCost + df.tradeoff[0].price;
+        ele.maxCostEmissions = ele.maxCostEmissions + df.tradeoff[0].emissions;
+        ele.minCost = ele.minCost + df.tradeoff[df.tradeoff.length - 1].price;
+        ele.minCostEmissions =
+          ele.minCostEmissions + df.tradeoff[df.tradeoff.length - 1].emissions;
       }
-      return a;
-    }, [])
-    .map(function(obj) {
-      return Object.keys(obj).map(function(key) {
-        return obj[key];
-      });
-    });
+    }
+    return arr;
+  }, []);
   return costEmisDestinationTable;
 }
-function _getUniqDestinationTable(data) {
-  const { destinationOptimality } = data.info;
-  var destinationCount = destinationOptimality.reduce((total, value) => {
-    total[value.from] = (total[value.from] || 0) + 1;
-    return total;
-  }, []);
-  var uniqDestination = destinationOptimality.reduce((a, b) => {
-    if (!a.find(ele => ele.from === b.from)) {
-      a.push(b);
-    }
-    return a;
-  }, []);
-  return uniqDestination.map(value => {
-    var desObj = {
-      from: value.from,
-      registrants: destinationCount[value.from],
-      destinationFrontier: value.destinationFrontier
+function _getCostEmissionByRange(data, range) {
+  let costEmissionTable = _getCostEmissionsTable(data);
+  costEmissionTable = costEmissionTable.map(value => {
+    let obj = {
+      destination: value.destination,
+      eMin: value.maxCostEmissions,
+      cMax: value.maxCost, //eMin has cMax
+      eDiff: value.minCostEmissions - value.maxCostEmissions,
+      cDiff: value.maxCost - value.minCost
     };
-    return desObj;
+    return obj;
+  });
+  let costEmissionWeightedTable = costEmissionTable.map(value => {
+    let obj = {
+      destination: value.destination,
+      wEmissions: value.eMin + (value.eDiff * range) / 10,
+      wCost: value.cMax - (value.cDiff * range) / 10
+    };
+    return obj;
+  });
+  // sort by cost if range >  5 and by emissions if <= 5
+  if (range > 5) {
+    costEmissionWeightedTable = costEmissionWeightedTable.sort((a, b) => {
+      return a.wCost - b.wCost;
+    });
+  } else {
+    costEmissionWeightedTable = costEmissionWeightedTable.sort((a, b) => {
+      return a.wEmissions - b.wEmissions;
+    });
+  }
+  return costEmissionWeightedTable;
+}
+function _formatTableData(data) {
+  return data.map(function(obj) {
+    return Object.keys(obj).map(function(key) {
+      return obj[key];
+    });
   });
 }
 TableList.propTypes = {
