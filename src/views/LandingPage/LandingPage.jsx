@@ -120,6 +120,14 @@ Hero.propTypes = {
   children: PropTypes.any
 };
 
+const NoPaddedSection = ({ children, style }) => (
+  <Section style={{ padding: 0, ...style }}>{children}</Section>
+);
+
+NoPaddedSection.propTypes = {
+  children: PropTypes.arrayOf(PropTypes.node)
+};
+
 function LandingPage() {
   return (
     <Provider>
@@ -145,7 +153,7 @@ function LandingPage() {
       </Hero>
       <br />
       <Heading textAlign="center">How it works</Heading>
-      <Section>
+      <NoPaddedSection>
         <Flex flexWrap="wrap" justifyContent="center">
           <Feature
             icon="✏️"
@@ -163,16 +171,16 @@ function LandingPage() {
             Ecofai it!
           </Feature>
         </Flex>
-      </Section>
-      <Section>
+      </NoPaddedSection>
+      <NoPaddedSection>
         <Heading textAlign="center">Why</Heading>
         <Flex flexWrap="wrap" justifyContent="center">
-          <Box width={[1, 1, 3/4]}>
+          <Box width={[1, 1, 1]}>
             Did you know that air travel makes up more than 2% of CO2 emissions worldwide?
           </Box>
         </Flex>
-      </Section>
-      <Section>
+      </NoPaddedSection>
+      <NoPaddedSection>
         <Flex flexWrap="wrap" justifyContent="center">
           <Box width={[1, 1, 3/4]}>
             Usually, when conferences are organized, the venue selection is
@@ -181,8 +189,8 @@ function LandingPage() {
             of unnecessary flying ✈️😭.
           </Box>
         </Flex>
-      </Section>
-      <Section>
+      </NoPaddedSection>
+      <NoPaddedSection>
         <Flex flexWrap="wrap" justifyContent="center">
           <Box width={[1, 1, 3/4]}>
             Instead, why not ask where your participants are coming
@@ -191,14 +199,14 @@ function LandingPage() {
             your conference!
           </Box>
         </Flex>
-      </Section>
-      <Section>
+      </NoPaddedSection>
+      <NoPaddedSection style={{ paddingBottom: 20 }}>
         <Flex justifyContent="center">
           <CallToAction href="/admin/create" mt={3}>
             Try it now for free!
           </CallToAction>
         </Flex>
-      </Section>
+      </NoPaddedSection>
     </Provider>
   );
 }
