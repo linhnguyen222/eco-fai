@@ -431,6 +431,12 @@ module.exports = app => {
       destinationAirports.map(({ code }) => code)
     );
 
+    // Early return if possibleFlightInformation is empty, just return
+    // an empty list so that Dynamoose doesn't get upset.
+    if (possibleFlightInformation.length === 0) {
+      return [];
+    }
+
     const itineraries = (await TravelItinerary.scan({
       FilterExpression: "contains(:ids, id)",
       ExpressionAttributeValues: {
