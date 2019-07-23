@@ -116,7 +116,7 @@ class Dashboard extends React.Component {
           routes={routes}
           logoText={"ecof.ai"}
           logo={logo}
-          image={this.state.image}
+          image={"https://source.unsplash.com/1600x900/?airplane,airport,flying"}
           handleDrawerToggle={this.handleDrawerToggle}
           open={this.state.mobileOpen}
           color={this.state.color}
