@@ -341,8 +341,8 @@ function TableList(props) {
                             </GridItem>
                             <GridItem sm={9}>
                               <p>
-                                Working on {currentlyFetchingFlightPlans}{" "}
-                                flight plans
+                                Working on {currentlyFetchingFlightPlans} flight
+                                plans
                               </p>
                             </GridItem>
                           </GridContainer>
