@@ -28,7 +28,12 @@ import {
   Flex,
   Box
 } from "rebass";
-import { Feature, CallToAction, ScrollDownIndicator, Section } from "react-landing-page";
+import {
+  Feature,
+  CallToAction,
+  ScrollDownIndicator,
+  Section
+} from "react-landing-page";
 
 // react-router imports
 import { withRouter } from "react-router";
