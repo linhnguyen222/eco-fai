@@ -130,6 +130,7 @@ const NoPaddedSection = ({ children, style }) => (
 );
 
 NoPaddedSection.propTypes = {
+  style: PropTypes.object,
   children: PropTypes.arrayOf(PropTypes.node)
 };
 
