@@ -145,10 +145,7 @@ function LandingPage() {
           filter: "blur(0.1rem)"
         }}
       >
-        <Heading>
-
-          ecof.ai
-        </Heading>
+        <Heading>ecof.ai</Heading>
         <Subhead>
           Dont fly everyone halfway around the world for no reason!
         </Subhead>
@@ -182,27 +179,27 @@ function LandingPage() {
         <Heading textAlign="center">Why</Heading>
         <Flex flexWrap="wrap" justifyContent="center">
           <Box width={[1, 1, 1]}>
-            Did you know that air travel makes up more than 2% of CO2 emissions worldwide?
+            Did you know that air travel makes up more than 2% of CO2 emissions
+            worldwide?
           </Box>
         </Flex>
       </NoPaddedSection>
       <NoPaddedSection>
         <Flex flexWrap="wrap" justifyContent="center">
-          <Box width={[1, 1, 3/4]}>
-            Usually, when conferences are organized, the venue selection is
-            done before the conference participants sign up. If your
-            conference participants often come from elsewhere, this can lead to lots
-            of unnecessary flying ✈️😭.
+          <Box width={[1, 1, 3 / 4]}>
+            Usually, when conferences are organized, the venue selection is done
+            before the conference participants sign up. If your conference
+            participants often come from elsewhere, this can lead to lots of
+            unnecessary flying ✈️😭.
           </Box>
         </Flex>
       </NoPaddedSection>
       <NoPaddedSection>
         <Flex flexWrap="wrap" justifyContent="center">
-          <Box width={[1, 1, 3/4]}>
-            Instead, why not ask where your participants are coming
-            from first using ecof.ai? Then we can tell you
-            the most cost-effective and environmentally friendly place to host
-            your conference!
+          <Box width={[1, 1, 3 / 4]}>
+            Instead, why not ask where your participants are coming from first
+            using ecof.ai? Then we can tell you the most cost-effective and
+            environmentally friendly place to host your conference!
           </Box>
         </Flex>
       </NoPaddedSection>
