@@ -843,6 +843,24 @@ module.exports = app => {
       }
     });
   });
+  app.get("/api/fetching-flight-plans/:slug", async (req, res) => {
+    const { InterestRegistration } = await lazyLoadModels();
+    const registrations = await InterestRegistration.scan({
+      conferenceSlug: {
+        eq: req.params.slug
+      }
+    }).exec();
+
+    res.json({
+      status: "ok",
+      info: {
+        fetching: registrations.filter(
+          r =>
+            !r.possibleFlightInformation || !r.possibleFlightInformation.length
+        ).length
+      }
+    });
+  });
   app.get("/api/conference-exists/:slug", async (req, res) => {
     const { Conference } = await lazyLoadModels();
     const conferences = await Conference.query("slug")
