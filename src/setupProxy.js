@@ -812,7 +812,7 @@ module.exports = app => {
         eq: req.params.slug
       }
     }).exec();
-    // console.log("got registrations", registrations);
+
     res.json({
       status: "ok",
       info: {
@@ -832,7 +832,7 @@ module.exports = app => {
                 destination,
                 tradeoff: computeParetoOptimalCostEmissionsTradeoff(
                   (await computeFlightTimesAndCostsTableFromItineraries(
-                    r.possibleFlightInformation,
+                    r.possibleFlightInformation || [],
                     destination
                   ))
                     .filter(value => {
