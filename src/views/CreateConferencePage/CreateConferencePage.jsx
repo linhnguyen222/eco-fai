@@ -20,7 +20,7 @@ import React from "react";
 import PropTypes from "prop-types";
 // date-io utils
 import DateFnsUtils from "@date-io/date-fns";
-import { addDays, max as dateMax } from "date-fns";
+import { addDays, addMonths, max as dateMax } from "date-fns";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import FormControl from "@material-ui/core/FormControl";
@@ -65,7 +65,7 @@ const allSet = args => {
 function CreateConferencePage(props) {
   const { classes } = props;
 
-  const [startDate, setStartDate] = React.useState(new Date());
+  const [startDate, setStartDate] = React.useState(addMonths(new Date(), 2));
   const [days, setDays] = React.useState(5);
   const [endDate, setEndDate] = React.useState(addDays(startDate, days));
   const [name, setName] = React.useState("");
