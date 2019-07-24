@@ -100,7 +100,10 @@ const createModels = () => {
 };
 
 const slugify = name =>
-  `${name.replace(/\s+/g, "-").toLowerCase().slice(0, 20)}-${randomstring.generate().slice(0, 5)}`;
+  `${name
+    .replace(/\s+/g, "-")
+    .toLowerCase()
+    .slice(0, 20)}-${randomstring.generate().slice(0, 5)}`;
 
 const lazyLoadModelsClosure = () => {
   let models = null;
