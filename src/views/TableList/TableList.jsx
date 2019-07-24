@@ -370,69 +370,11 @@ function TableList(props) {
                   Cost and Emissions Tradeoff
                 </h4>
                 <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by travel expense (This is a dummy table)
+                  Destinations ranked by travel expense
                 </p>
               </CardHeader>
               <CardBody>
-                <p>Set our priorities</p>
-                <div className={classes.bestChoice}>
-                  <h4>Best Choice: {costEmissionWeightedTable[0][0]}</h4>
-                  <GridContainer>
-                    <GridItem sm={3}>
-                      <p>Emissions</p>
-                    </GridItem>
-                    <GridItem sm={6}>
-                      <Slider
-                        min={1}
-                        max={10}
-                        value={ceRange}
-                        onChange={handleRangeChange}
-                      />
-                    </GridItem>
-                    <GridItem sm={3}>
-                      <p>Cost</p>
-                    </GridItem>
-                  </GridContainer>
-                </div>
-                {destinationInfoState === "FETCHED" ? (
-                  <Table
-                    tableHeaderColor="primary"
-                    tableHead={["Host City", "Emissions", "Cost"]}
-                    tableData={costEmissionWeightedTable}
-                  />
-                ) : (
-                  <CircularProgress className={progress} />
-                )}
-              </CardBody>
-            </Card>
-          </GridItem>
-          {/* second table */}
-          <GridItem xs={12} sm={12} md={12}>
-            <Card>
-              <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>
-                  Cost Emission efficiency
-                </h4>
-                <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by travel expense (This is a dummy table)
-                </p>
-              </CardHeader>
-              <CardBody>
-                {destinationInfoState === "FETCHED" ? (
-                  <Table
-                    tableHeaderColor="primary"
-                    tableHead={[
-                      "Destination City",
-                      "Max Cost",
-                      "Max Cost Emissions",
-                      "Min Cost",
-                      "Min Cost Emissions"
-                    ]}
-                    tableData={costEmissionTable}
-                  />
-                ) : (
-                  <CircularProgress className={progress} />
-                )}
+                <CircularProgress className={progress} />
               </CardBody>
             </Card>
           </GridItem>
