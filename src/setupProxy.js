@@ -834,13 +834,7 @@ module.exports = app => {
                   (await computeFlightTimesAndCostsTableFromItineraries(
                     r.possibleFlightInformation || [],
                     destination
-                  ))
-                    .filter(value => {
-                      // console.log("filtering", value);
-                      return value;
-                      // return emissions && price;
-                    })
-                    .map(({ emissions, price }) => [emissions, price])
+                  )).map(({ emissions, price }) => [emissions, price])
                 ).map(([emissions, price]) => ({ emissions, price }))
               }))
             )
