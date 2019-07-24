@@ -22,6 +22,7 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import { makeStyles } from "@material-ui/core/styles";
 // core components
 import CircularProgress from "@material-ui/core/CircularProgress";
+import TableFooter from "@material-ui/core/TableFooter";
 import { Slider } from "material-ui-slider";
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
@@ -96,6 +97,26 @@ function TableList(props) {
   ] = React.useState([[""]]);
   const [ceRange, setCeRange] = React.useState(0);
   const [tableData, setTableData] = React.useState([[""]]);
+  const [
+    currentlyFetchingFlightPlans,
+    setCurrentlyFetchingFlightPlans
+  ] = React.useState(0);
+  const [
+    currentlyFetchingFlightPlansState,
+    setCurrentlyFetchingFlightPlansState
+  ] = React.useState("NOT_FETCHED");
+
+  function fetchCurrentlyFetchingFlightPlans(slug) {
+    setCurrentlyFetchingFlightPlansState("WAITING");
+    fetch(`/api/fetching-flight-plans/${slug}`)
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "ok") {
+          setCurrentlyFetchingFlightPlans(res.info.fetching);
+          setCurrentlyFetchingFlightPlansState("FETCHED");
+        }
+      });
+  }
 
   function fetchAndComputeTableData(slug) {
     setDestinationInfoState("WAITING");
@@ -137,6 +158,11 @@ function TableList(props) {
   function navigateToSlug(slug) {
     history.push(`/admin/destinations/${slug}`);
     fetchAndComputeTableData(slug);
+    fetchCurrentlyFetchingFlightPlans(slug);
+  }
+
+  if (currentlyFetchingFlightPlansState === "NOT_FETCHED") {
+    fetchCurrentlyFetchingFlightPlans(slug);
   }
 
   if (destinationInfoState === "NOT_FETCHED") {
@@ -163,74 +189,125 @@ function TableList(props) {
       ) : destinationInfoState === "FETCHED" ? (
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
-            <Card>
-              <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>
-                  Cost and Emissions Tradeoff
-                </h4>
-                <p className={classes.cardCategoryWhite}>
-                  Destinations ranked by best possible travel expense for
-                  desired efficiency
-                </p>
-              </CardHeader>
-              <CardBody>
-                <GridContainer>
-                  {/* sidebar info */}
-                  <GridItem xs={12} sm={12} md={6}>
-                    <CardAvatar profile className={classes.avatarStyle}>
-                      <a href="#cophenhagen" onClick={e => e.preventDefault()}>
-                        {/* <img id="destination-img" src={"https://thumbor.forbes.com/thumbor/711x490/https://specials-images.forbesimg.com/dam/imageserve/1128749011/960x0.jpg?fit=scale"} alt="..." /> */}
-                        <img
-                          onError={addDefaultImgSrc}
-                          className="img-responsive"
-                          src={
-                            "https://ecofai-images.s3.eu-north-1.amazonaws.com/" +
-                            costEmissionWeightedTable[0][0] +
-                            "-min.png"
-                          }
-                        />
-                      </a>
-                    </CardAvatar>
-                    <div className={classes.bestChoice}>
-                      <h4>Best Choice: {costEmissionWeightedTable[0][0]}</h4>
-                      <GridContainer>
-                        <GridItem sm={3}>
-                          <p>Emissions</p>
-                        </GridItem>
-                        <GridItem sm={6}>
-                          <Slider
-                            min={1}
-                            max={10}
-                            value={ceRange}
-                            onChange={handleRangeChange}
+            {costEmissionWeightedTable.length !== 0 ? (
+              <Card>
+                <CardHeader color="info">
+                  <h4 className={classes.cardTitleWhite}>
+                    Cost and Emissions Tradeoff
+                  </h4>
+                  <p className={classes.cardCategoryWhite}>
+                    Destinations ranked by best possible travel expense for
+                    desired efficiency
+                  </p>
+                </CardHeader>
+                <CardBody>
+                  <GridContainer>
+                    {/* sidebar info */}
+                    <GridItem xs={12} sm={12} md={6}>
+                      <CardAvatar profile className={classes.avatarStyle}>
+                        <a
+                          href="#cophenhagen"
+                          onClick={e => e.preventDefault()}
+                        >
+                          {/* <img id="destination-img" src={"https://thumbor.forbes.com/thumbor/711x490/https://specials-images.forbesimg.com/dam/imageserve/1128749011/960x0.jpg?fit=scale"} alt="..." /> */}
+                          <img
+                            onError={addDefaultImgSrc}
+                            className="img-responsive"
+                            src={
+                              "https://ecofai-images.s3.eu-north-1.amazonaws.com/" +
+                              costEmissionWeightedTable[0][0] +
+                              "-min.png"
+                            }
                           />
-                        </GridItem>
-                        <GridItem sm={3}>
-                          <p>Cost</p>
-                        </GridItem>
-                      </GridContainer>
-                    </div>
-                  </GridItem>
-                  {/* end of sidebar info */}
-                  {/* The table */}
-                  <GridItem xs={12} sm={12} md={5}>
-                    {destinationInfoState === "FETCHED" ? (
-                      <Table
-                        tableHeaderColor="primary"
-                        tableHead={[
-                          "Host City",
-                          "Emissions CO2/m3",
-                          "Cost (USD $)"
-                        ]}
-                        tableData={costEmissionWeightedTable}
-                      />
-                    ) : (
+                        </a>
+                      </CardAvatar>
+                      <div className={classes.bestChoice}>
+                        <h4>Best Choice: {costEmissionWeightedTable[0][0]}</h4>
+                        <GridContainer>
+                          <GridItem sm={3}>
+                            <p>Emissions</p>
+                          </GridItem>
+                          <GridItem sm={6}>
+                            <Slider
+                              min={1}
+                              max={10}
+                              value={ceRange}
+                              onChange={handleRangeChange}
+                            />
+                          </GridItem>
+                          <GridItem sm={3}>
+                            <p>Cost</p>
+                          </GridItem>
+                        </GridContainer>
+                      </div>
+                    </GridItem>
+                    {/* end of sidebar info */}
+                    {/* The table */}
+                    <GridItem xs={12} sm={12} md={5}>
+                      {destinationInfoState === "FETCHED" ? (
+                        <Table
+                          tableHeaderColor="primary"
+                          tableHead={[
+                            "Host City",
+                            "Emissions CO2/m3",
+                            "Cost (USD $)"
+                          ]}
+                          tableData={costEmissionWeightedTable}
+                        >
+                          {currentlyFetchingFlightPlansState === "FETCHED" ? (
+                            currentlyFetchingFlightPlans ? (
+                              <TableFooter>
+                                <GridContainer>
+                                  <GridItem sm={3}>
+                                    <CircularProgress className={progress} />
+                                  </GridItem>
+                                  <GridItem sm={9}>
+                                    <p>
+                                      Working on {currentlyFetchingFlightPlans}{" "}
+                                      flight plans
+                                    </p>
+                                  </GridItem>
+                                </GridContainer>
+                              </TableFooter>
+                            ) : null
+                          ) : (
+                            <span />
+                          )}
+                        </Table>
+                      ) : (
+                        <CircularProgress className={progress} />
+                      )}
+                    </GridItem>
+                  </GridContainer>
+                </CardBody>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <h4 className={classes.cardTitleWhite}>
+                    No Participants yet!
+                  </h4>
+                </CardHeader>
+                <CardBody>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={3}>
                       <CircularProgress className={progress} />
-                    )}
-                  </GridItem>
-                </GridContainer>
-              </CardBody>
-            </Card>
+                    </GridItem>
+                    <GridItem>
+                      <p>
+                        Your conference does not have any participants yet, come
+                        back once they have registered!
+                      </p>
+                      <p>
+                        If you just registered a participant, note that
+                        computing their optimal path may take a few minutes, so
+                        check back in a bit
+                      </p>
+                    </GridItem>
+                  </GridContainer>
+                </CardBody>
+              </Card>
+            )}
           </GridItem>
           <GridItem xs={12} sm={12} md={12}>
             <Card>
@@ -254,7 +331,27 @@ function TableList(props) {
                       "Min Cost Emissions CO2/m3"
                     ]}
                     tableData={costEmissionTable}
-                  />
+                  >
+                    {currentlyFetchingFlightPlansState === "FETCHED" ? (
+                      currentlyFetchingFlightPlans ? (
+                        <TableFooter>
+                          <GridContainer>
+                            <GridItem sm={3}>
+                              <CircularProgress className={progress} />
+                            </GridItem>
+                            <GridItem sm={9}>
+                              <p>
+                                Working on {currentlyFetchingFlightPlans}{" "}
+                                flight plans
+                              </p>
+                            </GridItem>
+                          </GridContainer>
+                        </TableFooter>
+                      ) : null
+                    ) : (
+                      <span />
+                    )}
+                  </Table>
                 ) : (
                   <CircularProgress className={progress} />
                 )}
