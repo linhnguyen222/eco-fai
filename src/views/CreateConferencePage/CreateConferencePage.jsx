@@ -185,7 +185,7 @@ function CreateConferencePage(props) {
                       <br />
                       <br />
                       View a location that is better on both the environment and
-                      the wallets of your attendees at any time, at
+                      the wallets of your attendees at any time, at: <br />
                       {window.location.origin +
                         "/admin/destinations/" +
                         conferenceInfo.slug}
