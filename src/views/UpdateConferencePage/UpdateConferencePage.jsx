@@ -22,6 +22,7 @@ import PropTypes from "prop-types";
 import DateFnsUtils from "@date-io/date-fns";
 import { addDays, max as dateMax } from "date-fns";
 // @material-ui/core components
+import teal from "@material-ui/core/colors/teal";
 import withStyles from "@material-ui/core/styles/withStyles";
 import FormControl from "@material-ui/core/FormControl";
 import TextField from "@material-ui/core/TextField";
@@ -56,11 +57,28 @@ const styles = {
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
     marginBottom: "3px",
     textDecoration: "none"
+  },
+  highlighted: {
+    background: teal[200],
+    borderRadius: 2,
+    padding: 5,
+    opacity: 0.7,
+    color: "#ffffff"
   }
 };
 
 const allSet = args => {
   return args.reduce((value, a) => value && a);
+};
+
+const HighlightedLink = ({ href }) => (
+  <a href={href}>
+    <span style={styles.highlighted}>{href}</span>
+  </a>
+);
+
+HighlightedLink.propTypes = {
+  href: PropTypes.string
 };
 
 function UpdateConferencePage(props) {
@@ -187,14 +205,22 @@ function UpdateConferencePage(props) {
                 <CardBody>
                   <GridContainer>
                     <GridItem xs={12} sm={12} md={5}>
-                      Conference updated! As usual, the conference codeis:{" "}
-                      {conferenceInfo.slug}
+                      Conference updated! As usual, the conference code is{" "}
+                      <span style={styles.highlighted}>
+                        {conferenceInfo.slug}
+                      </span>
                       <p>
                         The registration link for your event is
                         <br></br>
-                        {window.location.origin +
-                          "/admin/register/" +
-                          conferenceInfo.slug}
+                        <HighlightedLink
+                          href={`${window.location.origin}/admin/register/${conferenceInfo.slug}`}
+                        />
+                        <br />
+                        View a location that is better on both the environment and
+                        the wallets of your attendees at any time, at: <br />
+                        <HighlightedLink
+                          href={`${window.location.origin}/admin/destinations/${conferenceInfo.slug}`}
+                        />
                       </p>
                     </GridItem>
                   </GridContainer>
