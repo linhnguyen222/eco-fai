@@ -139,11 +139,11 @@ const Footer = () => (
   <Flex is="footer" p={3}>
     <NavLink
       children="Product Hunt" // eslint-disable-line react/no-children-prop
-      to="https://www.producthunt.com/posts/ecof-ai"
+      href={"https://www.producthunt.com/posts/ecof-ai"}
     />
     <NavLink
       children="GitHub" // eslint-disable-line react/no-children-prop
-      href={"https://www.producthunt.com/linhngyuen222/eco-fai"}
+      href={"https://github.com/linhnguyen222/eco-fai"}
     />
     <Box color="grey" ml="auto">
       Made with ♥️ for a better environment.
