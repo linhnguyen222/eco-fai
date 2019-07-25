@@ -32,7 +32,7 @@ function Footer({ ...props }) {
       <div className={classes.container}>
         <p className={classes.right}>
           <span>
-            Made with ♥ for a better planet.
+            Made with ♥ for a better planet. Built on react-dashboard by @creativetimofficial.
           </span>
         </p>
       </div>
