@@ -283,7 +283,7 @@ function TableList(props) {
               </Card>
             ) : (
               <Card>
-                <CardHeader>
+                <CardHeader color="info">
                   <h4 className={classes.cardTitleWhite}>
                     No Participants yet!
                   </h4>
